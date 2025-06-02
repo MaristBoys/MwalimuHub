@@ -333,7 +333,7 @@ function simulateLogout() {
 // Funzione per caricare la navbar
 async function loadNavbar() {
     try {
-        // Usa la variabile BASE_PATH qui
+        // Carica la navbar da un file HTML esterno
         const response = await fetch(`/components/navbar.html`); 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
