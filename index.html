@@ -4,6 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marist Boys - MwalimuHub</title>
+    <link rel="icon" href="/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1717365801">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="/MwalimuHub/js/login.js?v=1717365801" defer></script>
+</head>
+<body>
+
+    <div id="navbar-placeholder" style="width: 100%;"></div>
+
+    <div id="navbar-spacer"></div>
+
+    <div class="header-image"></div>
+
+    <header class="content-header">
+        <div class="logo-title">
+            <img src="/MwalimuHub/assets/Marist_Brothers_monogram.svg" alt="Logo Marist" class="logo">
+            <div>
+                <h1>Marist Boys</h1>
+                <h2>MwalimuHub</h2>
+                <p>Digital Platform for Mwanza Marist Secondary School Teachers</p>
+            </div>
+        </div>
+        <button id="theme-toggle">🌞 / 🌙</button>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="google-button-wrapper">
+            <div id="g_id_onload"
+                 data-client_id="651622332732-hqg898c50786ii5rpa4iieo43gb6kmc8.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin google-button"
+                 data-type="standard"
+                 data-size="large"
+                 data-theme="outline"
+                 data-text="sign_in_with"
+                 data-shape="rectangular"
+                 data-logo_alignment="left">
+            </div>
+        </div>
+        
+        <div id="spinner" class="spinner"></div>
+        <div id="result" class="mt-4 text-gray-700"></div>
+
+        <section id="authenticated-content" class="mt-8 p-6 bg-white rounded-lg shadow-md hidden">
+            <h3 class="text-xl font-bold mb-4">Contenuto Riservato agli Utenti Autorizzati</h3>
+            <p>Questo è il contenuto che appare solo dopo che l'utente ha effettuato il login e la sua email è stata verificata nella whitelist.</p>
+            <p id="welcome-message" class="mt-4 text-lg font-semibold text-blue-600"></p>
+        </section>
+
+        <div class="flex justify-center space-x-4 mt-8">
+            <button id="simulate-login-button" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200">Simula Login</button>
+            <button id="simulate-logout-button" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition-colors duration-200">Simula Logout</button>
+        </div>
+    </main>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marist Boys - MwalimuHub</title>
+
+    <script async="false">
+        // Definisce il prefisso del repository GitHub.
+        const GITHUB_REPO_PREFIX = '/MwalimuHub';
+
+        // Funzione helper per rimuovere il prefisso se non siamo su GitHub Pages.
+        function removeGithubPathPrefix(element, attribute = 'src') {
+            if (element && element.hasAttribute(attribute)) {
+                let currentPath = element.getAttribute(attribute);
+                // Se il percorso inizia con il prefisso del repository GitHub, lo rimuoviamo.
+                if (currentPath && currentPath.startsWith(GITHUB_REPO_PREFIX)) {
+                    element.setAttribute(attribute, currentPath.substring(GITHUB_REPO_PREFIX.length));
+                    console.log(`Rimosso prefisso da ${attribute} di ${element.tagName}: ${element.getAttribute(attribute)}`);
+                }
+            }
+        }
+
+        // Esegui la rimozione del prefisso solo se NON siamo su GitHub Pages.
+        // Questo significa che siamo in un ambiente di sviluppo locale (es. Live Server).
+        if (!window.location.hostname.includes('github.io')) {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log("Ambiente di sviluppo locale rilevato. Rimozione prefissi GitHub Pages.");
+
+                // Correzione percorsi essenziali nella head
+                removeGithubPathPrefix(document.querySelector('link[rel="icon"]'), 'href');
+                removeGithubPathPrefix(document.querySelector('link[rel="stylesheet"][href*="css/style.css"]'), 'href');
+                removeGithubPathPrefix(document.querySelector('script[src*="js/login.js"]'), 'src');
+                
+                // Correzione per l'immagine del logo nell'header
+                removeGithubPathPrefix(document.querySelector('header.content-header .logo-title img.logo'));
+
+                // Correzione per la variabile CSS dell'immagine di sfondo
+                // Assumiamo che il CSS abbia già il prefisso, qui lo rimuoviamo se in locale.
+                let currentHeaderImagePath = getComputedStyle(document.documentElement).getPropertyValue('--header-image-path').trim();
+                if (currentHeaderImagePath.startsWith(`"${GITHUB_REPO_PREFIX}`)) {
+                    let newPath = currentHeaderImagePath.substring(GITHUB_REPO_PREFIX.length + 1); // +1 per le virgolette
+                    newPath = newPath.substring(0, newPath.length - 1); // Rimuovi virgolette finali
+                    document.documentElement.style.setProperty('--header-image-path', newPath);
+                    console.log(`Corretta variabile CSS --header-image-path per locale: ${newPath}`);
+                }
+            });
+        }
+    </script>
+
+    <link rel="icon" href="/MwalimuHub/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/MwalimuHub/MwalimuHub/css/style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="/MwalimuHub/MwalimuHub/js/login.js" defer></script>
+</head>
+<body>
+
+    <div id="navbar-placeholder" style="width: 100%;"></div>
+
+    <div id="navbar-spacer"></div>
+
+    <div class="header-image"></div>
+
+    <header class="content-header">
+        <div class="logo-title">
+            <img src="/MwalimuHub/MwalimuHub/assets/Marist_Brothers_monogram.svg" alt="Logo Marist" class="logo">
+            <div>
+                <h1>Marist Boys</h1>
+                <h2>MwalimuHub</h2>
+                <p>Digital Platform for Mwanza Marist Secondary School Teachers</p>
+            </div>
+        </div>
+        <button id="theme-toggle">🌞 / 🌙</button>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <section class="auth-section">
+            <h3 class="text-xl font-bold mb-4">Accesso Utenti</h3>
+            <p>Per accedere, effettua il login con il tuo account Google.</p>
+            <div id="g_id_onload"
+                 data-client_id="846614407865-80252t7g1q2a6d8s1e3n.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin google-button"
+                 data-type="standard"
+                 data-size="large"
+                 data-theme="outline"
+                 data-text="sign_in_with"
+                 data-shape="rectangular"
+                 data-logo_alignment="left">
+            </div>
+        </section>
+        
+        <div id="spinner" class="spinner"></div>
+        <div id="result" class="mt-4 text-gray-700"></div>
+
+        <section id="authenticated-content" class="mt-8 p-6 bg-white rounded-lg shadow-md hidden">
+            <h3 class="text-xl font-bold mb-4">Contenuto Riservato agli Utenti Autorizzati</h3>
+            <p>Questo è il contenuto che appare solo dopo che l'utente ha effettuato il login e la sua email è stata verificata nella whitelist.</p>
+            <p id="welcome-message" class="mt-4 text-lg font-semibold text-blue-600"></p>
+        </section>
+
+        <div class="flex justify-center space-x-4 mt-8">
+            <button id="simulate-login-button" class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200">Simula Login</button>
+            <button id="simulate-logout-button" class="bg-red-500 text-white px-6 py-3 rounded-md hover:bg-red-600 transition-colors duration-200">Simula Logout</button>
+        </div>
+    </main>
+
+    <footer class="mt-8 py-4 text-center text-gray-600 text-sm">
+        <p>&copy; 2024 Marist Brothers. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+-->
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marist Boys - MwalimuHub</title>
     <link rel="icon" href="assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/style.css">
@@ -65,3 +264,4 @@
 </body>
 </html>
 
+-->

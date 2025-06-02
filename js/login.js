@@ -6,7 +6,7 @@ const BACKEND_BASE_URL = 'https://google-api-backend-biu7.onrender.com';
 // Definisci il percorso base in modo dinamico in base all'hostname.
 // Se l'hostname include 'github.io', si tratta di un deployment su GitHub Pages, quindi includi il nome del repository.
 // Altrimenti (es. per Live Server locale), usa una stringa vuota come percorso base.
-const BASE_PATH = window.location.hostname.includes('github.io') ? '/MwalimuHub' : '';
+//const BASE_PATH = window.location.hostname.includes('github.io') ? '/MwalimuHub' : '';
 
 // Elementi UI (alcuni verranno cercati dopo il caricamento della navbar)
 const googleSignInButton = document.querySelector('.g_id_signin');
@@ -334,7 +334,7 @@ function simulateLogout() {
 async function loadNavbar() {
     try {
         // Usa la variabile BASE_PATH qui
-        const response = await fetch(`${BASE_PATH}/components/navbar.html`); 
+        const response = await fetch(`/components/navbar.html`); 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

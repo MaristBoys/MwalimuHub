@@ -1,0 +1,12 @@
+{
+  "name": "mwalimuhub",
+  "version": "1.0.0",
+  "description": "Frontend Node.js application for MwalimuHub",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
