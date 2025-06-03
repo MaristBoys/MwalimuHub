@@ -8,7 +8,7 @@ const repoName = "MwalimuHub";  // <-- Modifica con il nome corretto!
 const fileList = [
     "index.html",
     "components/navbar.html",
-    "css/styles.css",
+    "css/style.css",
     "js/login.js",
     "js/upload.js",
     "pages/upload.html"
@@ -56,3 +56,4 @@ fileList.forEach((file) => {
 });
 
 console.log("🚀 Tutte le modifiche sono state applicate ai file specificati!");
+
