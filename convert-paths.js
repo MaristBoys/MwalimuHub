@@ -4,81 +4,55 @@ const path = require("path");
 // Nome del repository GitHub Pages
 const repoName = "MwalimuHub";  // <-- Modifica con il nome corretto!
 
-// Cartelle da modificare
-const folders = ["", "js", "css", "components", "pages"];  // Aggiungi le cartelle necessarie
+// 🔹 **Lista dei file da modificare**
+const fileList = [
+    "index.html",
+    "components/navbar.html",
+    "css/styles.css",
+    "js/login.js",
+    "js/upload.js",
+    "pages/upload.html"
+];
 
-// Funzione ricorsiva per processare file in tutte le sottocartelle
-const processFiles = (dirPath) => {
-    fs.readdirSync(dirPath).forEach((file) => {
-        const filePath = path.join(dirPath, file);
-        
-        if (fs.statSync(filePath).isDirectory()) {
-            processFiles(filePath); // Se è una cartella, continua la scansione
-        } else if (file.endsWith(".html") || file.endsWith(".css") || file.endsWith(".js")) {
-            let content = fs.readFileSync(filePath, "utf8");
+// Percorso della directory principale
+const rootFolder = __dirname;
 
-            // Evita di aggiungere il prefisso due volte (solo se non è già presente)
-            content = content.replace(/(src|href)=["']\/(?!${repoName})/g, `$1="/${repoName}/`);
-            content = content.replace(/fetch\(["']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/MwalimuHub/${repoName}/`);
+// Funzione per modificare solo i file presenti nella lista
+const processFile = (filePath) => {
+    console.log(`📂 Scansionando il file: ${filePath}`);
 
-            // ✅ Aggiunta gestione per `url('/...')` SOLO nei file CSS
-            if (file.endsWith(".css")) {
-                content = content.replace(/url\(["']\/(?!${repoName})/g, `url("/${repoName}/`);
-            }
+    if (!fs.existsSync(filePath)) {
+        console.log(`❌ Il file non esiste: ${filePath}`);
+        return; // Evita errori se il file non esiste
+    }
 
-            fs.writeFileSync(filePath, content, "utf8");
-            console.log(`✅ Modificato: ${filePath}`);
-        }
-    });
+    let content = fs.readFileSync(filePath, "utf8");
+
+    // 🔹 **Gestione file HTML** (senza `fetch`)
+    if (filePath.endsWith(".html")) {
+        content = content.replace(/(src|href)=["']\/(?!${repoName})/g, `$1="/${repoName}/`);
+    }
+
+    // 🔹 **Gestione file CSS** (evita doppia modifica)
+    else if (filePath.endsWith(".css")) {
+        content = content.replace(/url\(["']\/(?!${repoName})/g, `url("/${repoName}/`);
+    }
+
+    // 🔹 **Gestione file JS** (supporta anche backticks!)
+    else if (filePath.endsWith(".js")) {
+        content = content.replace(/fetch\([`"']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/${repoName}/`);
+        content = content.replace(/\.href = [`"']\/(?!${repoName})/g, `.href = "/${repoName}/`);
+    }
+
+    fs.writeFileSync(filePath, content, "utf8");
+    console.log(`✅ Modificato: ${filePath}`);
 };
 
-// Avvia la scansione per ogni cartella principale
-folders.forEach((folder) => {
-    processFiles(path.join(__dirname, folder));
+// 🔹 **Esegui la modifica solo sui file della lista**
+fileList.forEach((file) => {
+    const filePath = path.join(rootFolder, file);
+    console.log(`🔍 Controllando il file: ${filePath}`);
+    processFile(filePath);
 });
 
-console.log("🚀 Tutte le modifiche sono state applicate con successo!");
-
-
-
-
-
-
-
-
-
-/*
-const fs = require("fs");
-const path = require("path");
-
-// Nome del repository GitHub Pages
-const repoName = "MwalimuHub";  // <-- Modifica con il nome corretto!
-
-// Cartelle da modificare
-const folders = ["", "js", "css", "components", "pages"];  // Aggiungi le cartelle necessarie
-
-folders.forEach((folder) => {
-    const dirPath = path.join(__dirname, folder);
-    
-    fs.readdirSync(dirPath).forEach((file) => {
-        const filePath = path.join(dirPath, file);
-        
-        if (file.endsWith(".html") || file.endsWith(".css") || file.endsWith(".js")) {
-            let content = fs.readFileSync(filePath, "utf8");
-
-            // Sostituzione dei path assoluti negli attributi HTML
-            content = content.replace(/src="\//g, `src="/MwalimuHub/${repoName}/`);
-            content = content.replace(/href="\//g, `href="/MwalimuHub/${repoName}/`);
-
-            // Sostituzione solo per le fetch che puntano al frontend
-            content = content.replace(/fetch\("\//g, `fetch("/MwalimuHub/${repoName}/`);
-            content = content.replace(/fetch\('\/(?!\${BACKEND_BASE_URL})/g, `fetch("/MwalimuHub/${repoName}/`);
-
-            fs.writeFileSync(filePath, content, "utf8");
-            console.log(`✅ Modificato: ${filePath}`);
-        }
-    });
-});
-
-console.log("Tutte le modifiche sono state applicate con successo!");
-*/
+console.log("🚀 Tutte le modifiche sono state applicate ai file specificati!");

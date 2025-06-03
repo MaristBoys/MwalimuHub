@@ -334,7 +334,7 @@ function simulateLogout() {
 async function loadNavbar() {
     try {
         // Carica la navbar da un file HTML esterno
-        const response = await fetch(`/components/navbar.html`); 
+        const response = await fetch("/MwalimuHub/components/navbar.html`); 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
