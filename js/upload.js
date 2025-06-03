@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         // Reindirizza alla pagina di login dopo un breve ritardo
         setTimeout(() => {
-            window.location.href = "/MwalimuHub/index.html'; 
+            window.location.href = "/MwalimuHub/index.html"; 
         }, 3000); 
         return; // Ferma l'esecuzione dello script qui
     }
