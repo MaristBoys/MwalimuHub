@@ -1,5 +1,3 @@
-// convert-paths.js
-// Questo script modifica i percorsi assoluti nei file HTML, CSS e JS per adattarli a GitHub Pages.
 const fs = require("fs");
 const path = require("path");
 
@@ -15,18 +13,18 @@ const processFiles = (dirPath) => {
         const filePath = path.join(dirPath, file);
         
         if (fs.statSync(filePath).isDirectory()) {
-            // Se il file è una cartella, esegue la funzione ricorsiva
-            processFiles(filePath);
+            processFiles(filePath); // Se è una cartella, continua la scansione
         } else if (file.endsWith(".html") || file.endsWith(".css") || file.endsWith(".js")) {
             let content = fs.readFileSync(filePath, "utf8");
 
-            // Sostituzione dei path assoluti negli attributi HTML
-            content = content.replace(/src="\//g, `src="/MwalimuHub/${repoName}/`);
-            content = content.replace(/href="\//g, `href="/MwalimuHub/${repoName}/`);
+            // Evita di aggiungere il prefisso due volte (solo se non è già presente)
+            content = content.replace(/(src|href)=["']\/(?!${repoName})/g, `$1="/${repoName}/`);
+            content = content.replace(/fetch\(["']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/MwalimuHub/${repoName}/`);
 
-            // Sostituzione solo per le fetch che puntano al frontend
-            content = content.replace(/fetch\("\//g, `fetch("/MwalimuHub/${repoName}/`);
-            content = content.replace(/fetch\('\/(?!\${BACKEND_BASE_URL})/g, `fetch('/MwalimuHub/${repoName}/`);
+            // ✅ Aggiunta gestione per `url('/...')` SOLO nei file CSS
+            if (file.endsWith(".css")) {
+                content = content.replace(/url\(["']\/(?!${repoName})/g, `url("/${repoName}/`);
+            }
 
             fs.writeFileSync(filePath, content, "utf8");
             console.log(`✅ Modificato: ${filePath}`);
@@ -40,6 +38,9 @@ folders.forEach((folder) => {
 });
 
 console.log("🚀 Tutte le modifiche sono state applicate con successo!");
+
+
+
 
 
 
@@ -71,7 +72,7 @@ folders.forEach((folder) => {
 
             // Sostituzione solo per le fetch che puntano al frontend
             content = content.replace(/fetch\("\//g, `fetch("/MwalimuHub/${repoName}/`);
-            content = content.replace(/fetch\('\/(?!\${BACKEND_BASE_URL})/g, `fetch('/MwalimuHub/${repoName}/`);
+            content = content.replace(/fetch\('\/(?!\${BACKEND_BASE_URL})/g, `fetch("/MwalimuHub/${repoName}/`);
 
             fs.writeFileSync(filePath, content, "utf8");
             console.log(`✅ Modificato: ${filePath}`);
