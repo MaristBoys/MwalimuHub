@@ -381,7 +381,7 @@ async function logout() {
             }
         }
         // Reindirizza alla pagina index.html dopo tutte le operazioni di logout
-        window.location.replace('/index.html');
+        window.location.replace("/MwalimuHub/index.html');
     }
 }
 

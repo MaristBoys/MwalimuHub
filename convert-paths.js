@@ -31,6 +31,7 @@ const processFile = (filePath) => {
     // 🔹 **Gestione file HTML** (senza `fetch`)
     if (filePath.endsWith(".html")) {
         content = content.replace(/(src|href)=["']\/(?!${repoName})/g, `$1="/${repoName}/`);
+        content = content.replace(/url\(["']\/(?!${repoName})/g, `url("/${repoName}/`);
     }
 
     // 🔹 **Gestione file CSS** (evita doppia modifica)
@@ -42,6 +43,7 @@ const processFile = (filePath) => {
     else if (filePath.endsWith(".js")) {
         content = content.replace(/fetch\([`"']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/${repoName}/`);
         content = content.replace(/\.href = [`"']\/(?!${repoName})/g, `.href = "/${repoName}/`);
+        content = content.replace(/\.replace\([`"']\/(?!${repoName})/g, `.replace("/${repoName}/`);
     }
 
     fs.writeFileSync(filePath, content, "utf8");

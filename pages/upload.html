@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Document - MwalimuHub</title>
     <link rel="icon" href="/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1748949981">
+    
+    <!-- Configurazione Tailwind CSS CDN. Assicurati che darkMode: 'class' sia qui. -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Abilita dark mode manuale (tramite classe 'dark')
+            theme: {
+                extend: {},
+            },
+        }
+    </script>
+    
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749130914">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -79,7 +90,7 @@
         </form>
     </main>
 
-    <script src="/MwalimuHub/js/login.js?v=1748949981" defer></script> 
-    <script src="/MwalimuHub/js/upload.js?v=1748949981" defer></script> 
+    <script src="/MwalimuHub/js/login.js?v=1749130914" defer></script> 
+    <script src="/MwalimuHub/js/upload.js?v=1749130914" defer></script> 
 </body>
 </html>
