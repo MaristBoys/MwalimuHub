@@ -1,3 +1,83 @@
+<nav id="main-navbar" class="bg-transparent text-white fixed w-full top-0 z-50 shadow">
+    <div class="w-full flex items-center justify-between px-4 py-2">
+        <!-- Left Section: Logo + School Name -->
+        <div class="flex items-center gap-2" id="navbar-left-section">
+            <img src="/assets/Marist_Brothers_monogram.svg" alt="Logo Marist"
+                class="h-7 w-7 rounded-full bg-white p-1 shadow">
+            <span class="text-yellow-400 font-bold text-base truncate">Mwanza Marist School</span>
+        </div>
+
+        <!-- Center Section: User Info -->
+        <div class="flex-grow text-center" id="navbar-center-section">
+            <span id="navbar-user-info" class="text-white text-sm font-semibold truncate"></span>
+        </div>
+
+        <!-- Right Section: Menu Icon -->
+        <div id="hamburger-icon" class="cursor-pointer p-2 relative hidden">
+            <div class="bg-yellow-400 h-0.5 w-5 mb-1"></div>
+            <div class="bg-yellow-400 h-0.5 w-5 mb-1"></div>
+            <div class="bg-yellow-400 h-0.5 w-5"></div>
+
+            <div id="menu-overlay"
+                class="absolute right-0 top-full mt-2 w-48 bg-gray-900 text-white rounded-md shadow-lg p-4 z-40 hidden">
+                <div class="flex flex-col items-start space-y-2 text-left">
+                    <a href="/index.html"
+                        class="text-white text-sm hover:text-yellow-400 transition-colors w-full">Home</a>
+                    <hr class="w-full h-px bg-gray-600 my-2">
+
+                    <h3 class="text-yellow-400 text-sm font-bold">Documents</h3>
+                    <a href="/pages/upload.html" id="upload-link"
+                        class="text-white text-sm hover:text-yellow-400 transition-colors w-full">Upload</a>
+                    <a href="#" class="text-white text-sm hover:text-yellow-400 transition-colors w-full">Search</a>
+
+                    <div id="dynamic-menu-links" class="flex flex-col items-start w-full"></div>
+                    <hr id="dynamic-links-separator" class="w-full h-px bg-gray-600 my-2 hidden">
+                    <hr class="w-full h-px bg-gray-600 my-2">
+
+                    <h3 class="text-yellow-400 text-sm font-bold">Results</h3>
+                    <a href="#" class="text-white text-sm hover:text-yellow-400 transition-colors w-full">View
+                        Results</a>
+
+                    <hr class="w-full h-px bg-gray-600 my-2">
+
+                    <a href="#" id="logout-link"
+                        class="text-yellow-400 text-sm font-bold hover:text-yellow-300 w-full text-left">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <nav id="main-navbar" class="fixed top-0 left-0 w-full z-50 bg-transparent transition-colors duration-300">
     <div class="container mx-auto py-2 flex items-center justify-between">
         <div class="flex items-center space-x-2" id="navbar-left-section"> 

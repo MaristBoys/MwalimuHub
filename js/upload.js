@@ -1,7 +1,7 @@
 // js/upload.js
 
 // Assicurati che BACKEND_BASE_URL sia definito. Se non lo è, prendilo da login.js o definiscilo qui.
-//const BACKEND_BASE_URL = 'https://google-api-backend-biu7.onrender.com';
+//const BACKEND_BASE_URL = window.BACKEND_BASE_URL;
 
 // Riferimenti agli elementi del form e dello spinner
 const uploadForm = document.getElementById('upload-form');
