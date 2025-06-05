@@ -31,7 +31,7 @@ const processFile = (filePath) => {
     // 🔹 **Gestione file HTML** (senza `fetch`)
     if (filePath.endsWith(".html")) {
         content = content.replace(/(src|href)=["']\/(?!${repoName})/g, `$1="/${repoName}/`);
-        content = content.replace(/url\(["']\/(?!${repoName})/g, `url("/${repoName}/`);
+        content = content.replace(/url\(["']\/(?!${repoName})/g, `url('/${repoName}/`);
     }
 
     // 🔹 **Gestione file CSS** (evita doppia modifica)
