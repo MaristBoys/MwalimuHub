@@ -6,7 +6,7 @@
  * per evitare richieste duplicate e memorizza i dati recuperati in `sessionStorage`.
  * Include la misurazione del tempo per ogni singola chiamata fetch.
  */
-async function prefetchDataForNextPages() {
+async function  DataForNextPages() {
     // Recupera la base URL del backend dalla variabile globale definita in config.js.
     // È garantito che sia disponibile se config.js è caricato prima di questo script.
     const BACKEND_BASE_URL = window.BACKEND_BASE_URL; 

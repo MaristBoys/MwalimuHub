@@ -9,13 +9,6 @@ const uploadButton = document.getElementById('upload-button');
 const uploadSpinner = document.getElementById('upload-spinner');
 const uploadStatus = document.getElementById('upload-status'); // Per messaggi di stato
 
-// --- MODIFICHE INIZIANO QUI ---
-
-// Costante per la durata di validità del cache in localStorage (deve corrispondere a quella in login.js)
-//const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 ore
-
-// --- MODIFICHE FINISCONO QUI ---
-
 document.addEventListener('DOMContentLoaded', async () => {
     // Carica la navbar (riutilizzando la funzione da login.js)
     if (window.loadNavbar) {
@@ -46,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         // Reindirizza alla pagina di login dopo un breve ritardo
         setTimeout(() => {
-            window.location.href = "/MwalimuHub/index.html"; 
+            window.location.href = "/index.html"; 
         }, 3000); 
         return; // Ferma l'esecuzione dello script qui
     }
@@ -89,7 +82,6 @@ function prefillAuthor() {
     }
 }
 
-// --- MODIFICHE INIZIANO QUI: FUNZIONE populateDropdowns() ---
 // Funzione per popolare tutti i menu a tendina
 async function populateDropdowns() {
     const yearSelect = document.getElementById('year');
@@ -98,92 +90,41 @@ async function populateDropdowns() {
     const roomSelect = document.getElementById('room');
     const documentTypeSelect = document.getElementById('documentType');
 
-    let cachedData = null;
-    let cacheTimestamp = null;
-    const loadFromCacheStartTime = performance.now(); // Inizio misurazione tempo complessivo caricamento dropdown
-
-    try {
-        const storedData = localStorage.getItem('dropdownData');
-        const storedTimestamp = localStorage.getItem('dropdownDataTimestamp');
-
-        if (storedData && storedTimestamp) {
-            cacheTimestamp = parseInt(storedTimestamp, 10);
-            const now = Date.now();
-            if (now - cacheTimestamp < CACHE_DURATION_MS) {
-                cachedData = JSON.parse(storedData);
-                console.log(`Dati dropdown trovati in localStorage e validi. Tempo di verifica cache: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
-                // console.log('Dati da cache:', cachedData); // Puoi decommentare per vedere i dati della cache
+    // Funzione helper per recuperare e popolare un singolo dropdown
+    const fetchAndPopulate = async (selectElement, endpoint, loadingText, errorText) => {
+        selectElement.innerHTML = `<option value="">${loadingText}</option>`;
+        try {
+            const response = await fetch(`${BACKEND_BASE_URL}/api/${endpoint}`);
+            if (!response.ok) {
+                throw new Error(`Errore HTTP! status: ${response.status}`); // Tradotto
+            }
+            const data = await response.json();
+            selectElement.innerHTML = '<option value="">Seleziona un\'opzione</option>'; // Tradotto
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    selectElement.appendChild(option);
+                });
             } else {
-                console.log('Dati dropdown in localStorage scaduti, necessaria nuova fetch.');
-                localStorage.removeItem('dropdownData'); // Pulisce i dati scaduti
-                localStorage.removeItem('dropdownDataTimestamp'); // Pulisce il timestamp scaduto
+                selectElement.innerHTML = `<option value="">Nessuna opzione disponibile</option>`; // Tradotto
             }
-        } else {
-            console.log('Nessun dato dropdown trovato in localStorage, necessaria nuova fetch.');
+        } catch (error) {
+            console.error(`Errore nel recupero ${endpoint}:`, error); // Tradotto
+            selectElement.innerHTML = `<option value="">${errorText}</option>`;
         }
-    } catch (e) {
-        console.error('Errore nel parsing o accesso a localStorage:', e);
-        localStorage.removeItem('dropdownData'); // Pulizia dati corrotti
-        localStorage.removeItem('dropdownDataTimestamp'); // Pulizia timestamp corrotti
-        cachedData = null; // Forza la nuova fetch
-    }
+    };
 
-    const dropdownsConfig = [
-        { selectElement: yearSelect, endpoint: 'drive/years', loadingText: 'Caricamento Anni...', errorText: 'Errore nel caricamento degli Anni', key: 'years' },
-        { selectElement: subjectSelect, endpoint: 'sheets/subjects', loadingText: 'Caricamento Materie...', errorText: 'Errore nel caricamento delle Materie', key: 'subjects' },
-        { selectElement: formSelect, endpoint: 'sheets/forms', loadingText: 'Caricamento Classi...', errorText: 'Errore nel caricamento delle Classi', key: 'forms' },
-        { selectElement: roomSelect, endpoint: 'sheets/rooms', loadingText: 'Caricamento Stanze...', errorText: 'Errore nel caricamento delle Stanze', key: 'rooms' },
-        { selectElement: documentTypeSelect, endpoint: 'sheets/types', loadingText: 'Caricamento Tipi di Documento...', errorText: 'Errore nel caricamento dei Tipi di Documento', key: 'documentTypes' }
-    ];
-
-    const populatePromises = dropdownsConfig.map(async config => {
-        const { selectElement, endpoint, loadingText, errorText, key } = config;
-        selectElement.innerHTML = `<option value="">${loadingText}</option>`; // Imposta lo stato di caricamento iniziale per ogni dropdown
-
-        const itemStartTime = performance.now(); // Inizio misurazione per singolo item
-        let dataToUse = null;
-
-        if (cachedData && cachedData[key]) {
-            dataToUse = cachedData[key];
-            console.log(`Dropdown ${key}: Dati caricati da localStorage in ${(performance.now() - itemStartTime).toFixed(2)} ms.`);
-        } else {
-            // Se non c'è cachedData o il dato specifico è null (es. errore pre-fetching), esegui la fetch
-            console.log(`Dropdown ${key}: Esecuzione nuova fetch da backend.`);
-            try {
-                // Assicurati che BACKEND_BASE_URL sia disponibile globalmente (come esposto in login.js)
-                const response = await fetch(`${window.BACKEND_BASE_URL}/api/${endpoint}`);
-                if (!response.ok) {
-                    throw new Error(`Errore HTTP! status: ${response.status}`);
-                }
-                dataToUse = await response.json();
-                console.log(`Dropdown ${key}: Dati caricati da backend in ${(performance.now() - itemStartTime).toFixed(2)} ms.`);
-            } catch (error) {
-                console.error(`Errore nel recupero ${endpoint} per dropdown ${key}:`, error);
-                selectElement.innerHTML = `<option value="">${errorText}</option>`;
-                return; // Esce da questo map item, non popola
-            }
-        }
-
-        // Popola il dropdown con i dati ottenuti
-        selectElement.innerHTML = '<option value="">Seleziona un\'opzione</option>'; // Tradotto
-        if (dataToUse && Array.isArray(dataToUse) && dataToUse.length > 0) { // Aggiunto controllo Array.isArray
-            dataToUse.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                selectElement.appendChild(option);
-            });
-        } else {
-            selectElement.innerHTML = `<option value="">Nessuna opzione disponibile</option>`; // Tradotto
-        }
-    });
-
-    await Promise.all(populatePromises); // Attendi che tutti i dropdown siano popolati
-    console.log(`Tutti i dropdown sono stati popolati. Tempo totale di popolamento: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
+    // Popola i dropdown in parallelo
+    await Promise.all([
+        fetchAndPopulate(yearSelect, 'drive/years', 'Caricamento Anni...', 'Errore nel caricamento degli Anni'), // Tradotto
+        fetchAndPopulate(subjectSelect, 'sheets/subjects', 'Caricamento Materie...', 'Errore nel caricamento delle Materie'), // Tradotto
+        fetchAndPopulate(formSelect, 'sheets/forms', 'Caricamento Classi...', 'Errore nel caricamento delle Classi'), // Tradotto
+        fetchAndPopulate(roomSelect, 'sheets/rooms', 'Caricamento Stanze...', 'Errore nel caricamento delle Stanze'), // Tradotto
+        fetchAndPopulate(documentTypeSelect, 'sheets/types', 'Caricamento Tipi di Documento...', 'Errore nel caricamento dei Tipi di Documento') // Tradotto
+    ]);
 }
-
-// --- MODIFICHE FINISCONO QUI ---
-
 
 // Funzione per gestire l'upload del file
 async function handleUpload(event) {
@@ -224,7 +165,7 @@ async function handleUpload(event) {
     formData.append('description', JSON.stringify(metadata)); // Invia i metadati come stringa JSON nella descrizione
 
     try {
-        const response = await fetch(`${window.BACKEND_BASE_URL}/api/upload`, {
+        const response = await fetch(`${BACKEND_BASE_URL}/api/upload`, {
             method: 'POST',
             body: formData // FormData viene gestito automaticamente con Content-Type: multipart/form-data
         });

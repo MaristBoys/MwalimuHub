@@ -2,6 +2,9 @@
 
 // SOSTITUISCI CON L'URL DEL TUO BACKEND RENDER
 const BACKEND_BASE_URL = 'https://google-api-backend-biu7.onrender.com';
+// ESPONI BACKEND_BASE_URL all'oggetto globale window
+window.BACKEND_BASE_URL = BACKEND_BASE_URL;
+
 
 // Variabili globali per elementi UI
 const resultDiv = document.getElementById('result');
@@ -29,6 +32,68 @@ let uploadLink;
 let isMenuOverlayOpen = false;
 // Variabile per tenere traccia dello stato del backend
 let isBackendReady = false;
+
+
+
+// --- MODIFICA FETCH dati dropdown  INIZIANO QUI ---
+
+// Costante per la durata di validità del cache in localStorage (es. 24 ore in millisecondi)
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 ore
+
+// Funzione per avviare il fetching dei dati dei dropdown e salvarli in localStorage
+async function initiateDropdownDataFetch() {
+    console.log('Inizio pre-fetching dati dropdown per localStorage...');
+    const fetchStartTime = performance.now(); // Inizio misurazione tempo
+
+    const endpoints = {
+        years: 'drive/years',
+        subjects: 'sheets/subjects',
+        forms: 'sheets/forms',
+        rooms: 'sheets/rooms',
+        documentTypes: 'sheets/types'
+    };
+
+    const fetchPromises = [];
+    const fetchedData = {}; // Oggetto temporaneo per accumulare i dati
+
+    for (const key in endpoints) {
+        const endpointUrl = `${BACKEND_BASE_URL}/api/${endpoints[key]}`;
+        const itemFetchStartTime = performance.now(); // Inizio misurazione per singolo elemento
+
+        const promise = fetch(endpointUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                fetchedData[key] = data; // Salva i dati nell'oggetto temporaneo
+                console.log(`Dati per ${key} pre-caricati con successo in ${(performance.now() - itemFetchStartTime).toFixed(2)} ms.`);
+            })
+            .catch(error => {
+                console.error(`Errore durante il pre-fetching di ${key} da ${endpointUrl}:`, error);
+                fetchedData[key] = null; // Indica un fallimento per questo set di dati
+            });
+        fetchPromises.push(promise);
+    }
+
+    try {
+        await Promise.all(fetchPromises); // Attendi che tutte le fetch siano complete
+        // Salva tutti i dati e il timestamp in localStorage solo dopo che tutte le fetch sono terminate
+        localStorage.setItem('dropdownData', JSON.stringify(fetchedData));
+        localStorage.setItem('dropdownDataTimestamp', Date.now().toString());
+        const fetchEndTime = performance.now(); // Fine misurazione tempo totale
+        console.log(`Pre-fetching di TUTTI i dati dropdown completato e salvato in localStorage in ${(fetchEndTime - fetchStartTime).toFixed(2)} ms.`);
+    } catch (error) {
+        console.error('Errore critico durante il pre-fetching complessivo dei dati dropdown:', error);
+    }
+}
+
+// --- MODIFICHE FINISCONO QUI ---
+
+
+
 
 // Funzione per "svegliare" il backend all'avvio della pagina
 // Utile per servizi gratuiti che vanno in "sleep"
@@ -267,7 +332,7 @@ function updateUIForLoginState(isLoggedIn, userData = null) {
 // Funzione di callback per Google Identity Services
 async function handleCredentialResponse(response) {
     const idToken = response.credential;
-    console.log("Received idToken from Google:", idToken);
+    console.log("Received idToken from Google:", idToken.substring(0, 20));
     if (resultDiv) resultDiv.innerHTML = `<p class="text-gray-600">Received ID Token from Google: ${idToken.substring(0, 20)}...</p>`;
 
     // Mostra spinner di caricamento e nasconde il pulsante Google durante il login
@@ -295,6 +360,9 @@ async function handleCredentialResponse(response) {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userData', JSON.stringify(data));
             updateUIForLoginState(true, data);
+            // --- MODIFICA QUI ---
+            initiateDropdownDataFetch(); // <--- CHIAMATA QUI DOPO IL LOGIN RIUSCITO
+            // --- FINE MODIFICA ---
         } else {
             const message = `<p style="color:red;">Accesso negato: ${data.message}</p>`;
             if (resultDiv) resultDiv.innerHTML = message;
@@ -345,7 +413,11 @@ async function logout() {
         // Pulizia dello stato locale
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userData');
-        // if (resultDiv) resultDiv.innerHTML = ''; // Rimosso per mantenere il messaggio di logout riuscito
+        // --- MODIFICA FETCH AGGIUNGI QUESTE DUE RIGHE QUI ---
+        localStorage.removeItem('dropdownData');
+        localStorage.removeItem('dropdownDataTimestamp');
+        // --- FINE AGGIUNTA ---
+        
 
         // Chiudi il menu universale e aggiorna lo stato
         if (menuOverlay) {
@@ -411,6 +483,7 @@ function simulateLogin() {
     if (resultDiv) resultDiv.innerHTML += successMessage;
     console.log(successMessage);
     updateUIForLoginState(true, mockUserData);
+    initiateDropdownDataFetch(); // <---MODIFICA AGGIUNGI QUESTA RIGA
 
     // Nasconde spinner di login simulato e mostra pulsante
     if (backendLoadingSpinner) backendLoadingSpinner.classList.add('hidden');
