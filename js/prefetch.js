@@ -1,5 +1,5 @@
 // js/prefetch.js
-import { CACHE_DURATION_MS } from '/js/utils.js';
+import { CACHE_DURATION_MS } from '/MwalimuHub/js/utils.js';
 
 /**
  * Recupera e cache i dati dei dropdown dal backend.

@@ -9,7 +9,10 @@ const fileList = [
     "index.html",
     "components/navbar.html",
     "css/style.css",
+    "js/utils.js",
+    "js/prefetch.js",
     "js/login.js",
+    "js/index.js",
     "js/upload.js",
     "pages/upload.html"
 ];
@@ -44,8 +47,8 @@ const processFile = (filePath) => {
         content = content.replace(/fetch\([`"']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/${repoName}/`);
         content = content.replace(/\.href = [`"']\/(?!${repoName})/g, `.href = "/${repoName}/`);
         content = content.replace(/\.replace\([`"']\/(?!${repoName})/g, `.replace("/${repoName}/`);
-        // NUOVA RIGA: Cerca 'from '/js/' e aggiunge il reponame
-        content = content.replace(/(from\s+['"])\/(js\/)/g, `$1${repoName}/$2`);
+        // RIGA CORRETTA: Inserisce /${repoName}/
+        content = content.replace(/(from\s+['"])\/(js\/)/g, `$1/${repoName}/$2`);
         
     }
 

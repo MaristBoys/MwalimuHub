@@ -261,7 +261,7 @@ export async function wakeUpBackend(pageSpecificResultDiv = null) {
 export async function loadNavbar(options = {}) {
     const { pageSpecificResultDiv = null, forceNavbarOpaque = false } = options;
     try {
-        const response = await fetch("/components/navbar.html");
+        const response = await fetch("/MwalimuHub/components/navbar.html");
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
