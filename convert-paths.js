@@ -44,6 +44,9 @@ const processFile = (filePath) => {
         content = content.replace(/fetch\([`"']\/(?!${repoName}|${BACKEND_BASE_URL})/g, `fetch("/${repoName}/`);
         content = content.replace(/\.href = [`"']\/(?!${repoName})/g, `.href = "/${repoName}/`);
         content = content.replace(/\.replace\([`"']\/(?!${repoName})/g, `.replace("/${repoName}/`);
+        // NUOVA RIGA: Cerca 'from '/js/' e aggiunge il reponame
+        content = content.replace(/(from\s+['"])\/(js\/)/g, `$1${repoName}/$2`);
+        
     }
 
     fs.writeFileSync(filePath, content, "utf8");

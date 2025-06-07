@@ -8,8 +8,8 @@ import {
     menuOverlay,
     // mainNavbar, // Non più necessario importare mainNavbar qui, viene passato da triggerNavbarPulse
     triggerNavbarPulse // Importa la nuova funzione
-} from '/js/utils.js';
-import { fetchAndCacheDropdownData, fetchAndCacheNewData } from '/js/prefetch.js';
+} from 'MwalimuHub/js/utils.js';
+import { fetchAndCacheDropdownData, fetchAndCacheNewData } from 'MwalimuHub/js/prefetch.js';
 
 // Variabili per gli elementi DOM specifici della pagina che verranno passati da index.js
 // Queste variabili mantengono i riferimenti DOM tra le chiamate delle funzioni di login.js
