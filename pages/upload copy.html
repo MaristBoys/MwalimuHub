@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Document - MwalimuHub</title>
+    <link rel="icon" href="/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
+    
+    <!-- Configurazione Tailwind CSS CDN. Assicurati che darkMode: 'class' sia qui. -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Abilita dark mode manuale (tramite classe 'dark')
+            theme: {
+                extend: {},
+            },
+        }
+    </script>
+    
+    <link rel="stylesheet" href="/css/style.css?v=1749212287">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <div id="navbar-placeholder" style="width: 100%;"></div>
+
+    <div id="navbar-spacer"></div>
+
+    <main class="container mx-auto px-4 py-4">
+        <h2 class="text-yellow-400 text-2xl font-bold text-center mt-3 mb-1">Upload Document</h2>
+            
+        <div class="flex items-center justify-center">
+            <div id="upload-spinner" class="spinner hidden"></div>
+            <div id="upload-status" class="ml-4 text-sm font-semibold"></div>
+        </div>
+
+        <form id="upload-form" class="bg-white p-4 rounded-lg shadow-md max-w-lg mx-auto">
+                    
+            <div class="mb-3">
+                <label for="year" class="block text-gray-700 text-sm font-bold mb-2">Year:</label>
+                <select id="year" name="year" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Loading Years...</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="author" class="block text-gray-700 text-sm font-bold mb-2">Author:</label>
+                <input type="text" id="author" name="author" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100" readonly required>
+            </div>
+
+            <div class="mb-3">
+                <label for="subject" class="block text-gray-700 text-sm font-bold mb-2">Subject:</label>
+                <select id="subject" name="subject" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Loading Subjects...</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="form" class="block text-gray-700 text-sm font-bold mb-2">Form:</label>
+                <select id="form" name="form" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Loading Forms...</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="room" class="block text-gray-700 text-sm font-bold mb-2">Room:</label>
+                <select id="room" name="room" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Loading Rooms...</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="documentType" class="block text-gray-700 text-sm font-bold mb-2">Document Type:</label>
+                <select id="documentType" name="documentType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <option value="">Loading Document Types...</option>
+                </select>
+            </div>
+
+            <div class="mb-5">
+                <label for="file" class="block text-gray-700 text-sm font-bold mb-2">Choose File:</label>
+                <input type="file" id="file" name="file" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+
+            <div class="flex justify-center mb-1"> 
+                <button type="submit" id="upload-button" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Upload
+                </button>
+            </div>
+
+        </form>
+    </main>
+
+    <script src="/js/login.js?v=1749212287" defer></script> 
+    <script src="/js/upload.js?v=1749212287" defer></script> 
+</body>
+</html>

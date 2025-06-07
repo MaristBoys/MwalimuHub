@@ -19,9 +19,11 @@
     </script>
 
     <!-- Il tuo file CSS personalizzato -->
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749152259">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="/MwalimuHub/js/login.js?v=1749152259" defer></script>
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749212287">
+    <!-- Non serve qui, la libreria GSI verrà inizializzata con window.onload -->
+    <!-- <script src="https://accounts.google.com/gsi/client" async defer></script> -->
+    <!-- Questo script è obsoleto, verrà rimosso e gestito dal nuovo setup modulare -->
+    <!-- <script src="/MwalimuHub/js/login.js?v=1749212287" defer></script> -->
 </head>
 
 <body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100">
@@ -33,7 +35,7 @@
 
     <!-- Header Content -->
     <header
-        class="w-[90%] max-w-[700px] mx-auto text-center p-4 relative bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md dark:shadow-lg mt-[10px] z-[10]">
+        class="w-[90%] max-w-[700px] mx-auto text-center p-4 relative bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md dark:shadow-lg mt-[20px] z-[10]">
         <div class="flex flex-col items-center gap-2.5">
             <img src="/MwalimuHub/assets/Marist_Brothers_monogram.svg" alt="Logo Marist"
                 class="w-20 h-20 rounded-full shadow-md" />
@@ -48,38 +50,40 @@
     </header>
 
     <!-- Main Content -->
-    <main class="w-[90%] max-w-[400px] mx-auto p-4">
-        <!-- SEZIONE LOGIN AGGIORNATA CON SPINNER BACKEND E MESSAGGIO -->
-        <section id="google-login-section" class="bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md p-6 text-center">
-            <h3 class="text-xl font-semibold mb-2 dark:text-yellow-400">Sign in</h3>
-            <p class="mb-4 text-gray-600 dark:text-yellow-300">Use your <strong class="font-bold">Google
-                    account</strong> for a secure login.</p>
-            <div class="flex justify-center">
-                <!-- Contenitore per spinner e messaggio di attesa del backend (inizialmente visibile) -->
-                <div id="waiting-for-backend-message" class="text-center flex flex-col items-center">
-                    <div id="backend-loading-spinner" class="border-4 border-gray-200 border-l-blue-500 rounded-full w-8 h-8 animate-spin"></div>
-                    <p id="server-status-message" class="mt-2 text-gray-600 dark:text-gray-300">Waiting for server response...</p>
-                </div>
-
-                <!-- Contenitore del pulsante Google (inizialmente nascosto) -->
-                <div id="google-auth-button-wrapper" class="hidden">
-                    <div id="g_id_onload"
-                        data-client_id="651622332732-hqg898c50786ii5rpa4iieo43gb6kmc8.apps.googleusercontent.com"
-                        data-callback="handleCredentialResponse" data-auto_prompt="false">
+    <main class="w-[90%] max-w-[700px] mx-auto p-4 mt-[10px]">
+        <div class="flex flex-col items-center gap-2.5">
+            <!-- SEZIONE LOGIN AGGIORNATA CON SPINNER BACKEND E MESSAGGIO -->
+            <section id="google-login-section"
+                class="max-w-[400px] bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md p-6 text-center">
+                <h3 class="text-xl font-semibold mb-2 dark:text-yellow-400">Sign in</h3>
+                <p class="mb-4 text-gray-600 dark:text-yellow-300">Use your <strong class="font-bold">Google
+                        account</strong> for a secure login.</p>
+                <div class="flex justify-center">
+                    <!-- Contenitore per spinner e messaggio di attesa del backend (inizialmente visibile) -->
+                    <div id="waiting-for-backend-message" class="text-center flex flex-col items-center">
+                        <div id="backend-loading-spinner"
+                            class="border-4 border-gray-200 border-l-blue-500 rounded-full w-8 h-8 animate-spin"></div>
+                        <p id="server-status-message" class="mt-2 text-gray-600 dark:text-gray-300">Waiting for server
+                            response...</p>
                     </div>
-                    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
-                        data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left">
+
+                    <!-- Contenitore del pulsante Google (inizialmente nascosto) -->
+                    <div id="google-auth-button-wrapper" class="hidden">
+                        <div id="g_id_onload"
+                            data-client_id="651622332732-hqg898c50786ii5rpa4iieo43gb6kmc8.apps.googleusercontent.com"
+                            data-callback="handleCredentialResponse" data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+                            data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left">
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        <div id="result" class="bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md p-6 mt-6 text-left hidden"></div>
 
-        <!-- Il div spinner vecchio con id="spinner" è stato rimosso -->
-        <!-- <div id="spinner" class="border-4 border-gray-200 border-l-blue-500 rounded-full w-8 h-8 animate-spin mx-auto my-4 hidden"></div> -->
-
-        <div id="result" class="bg-white dark:bg-[#2a2a2a] rounded-lg shadow-md p-6 mt-6 text-left"></div>
-
-        <div class="flex justify-center space-x-4 mt-8">
+        <!-- Pulsanti per simulare login/logout nascosti, non servono più, commentati i listener in index.js
+        <div class="flex justify-center space-x-4 mt-8 hidden">  
             <button id="simulate-login-button"
                 class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200">Simula
                 Login</button>
@@ -87,10 +91,47 @@
                 class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition-colors duration-200">Simula
                 Logout</button>
         </div>
-
+        -->
     </main>
+
+    <!-- Libreria client di Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
+    <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
+    <script src="/MwalimuHub/js/config.js=1749212287"></script>
+
+    <!-- Importa i tuoi script come moduli ES6. L'ordine è importante per le dipendenze. -->
+    <script type="module" src="/MwalimuHub/js/utils.js?v=1749212287"></script>
+    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749212287"></script>
+    <script type="module" src="/MwalimuHub/js/login.js?v=1749212287"></script>
+    <script type="module" src="/MwalimuHub/js/index.js?v=1749212287"></script>
+
+    <!-- Inizializzazione di Google Identity Services dopo che i moduli sono disponibili -->
+    <script>
+        // Questa funzione viene chiamata dalla libreria GSI quando è pronta.
+        // È cruciale che window.handleCredentialResponse sia stata esposta da login.js
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "651622332732-hqg898c50786ii5rpa4iieo43gb6kmc8.apps.googleusercontent.com", // SOSTITUISCI CON IL TUO CLIENT ID REALE
+                callback: window.handleCredentialResponse // Usa la funzione esposta globalmente da login.js
+            });
+            // Renderizza il pulsante di Google
+            google.accounts.id.renderButton(
+                document.getElementById("google-auth-button-wrapper"),
+                {
+                    type: "standard",
+                    size: "large",
+                    theme: "outline",
+                    text: "sign_in_with",
+                    shape: "rectangular",
+                    logo_alignment: "left"
+                }
+            );
+            // Non è necessario un prompt automatico qui se lo gestiamo via wakeUpBackend
+            // google.accounts.id.prompt();
+        };
+    </script>
 </body>
 
 </html>
-
-

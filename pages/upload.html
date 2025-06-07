@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> <!-- Lingua della pagina impostata su inglese -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Document - MwalimuHub</title>
-    <link rel="icon" href="/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
+    <title>Upload Document - MwalimuHub</title> <!-- Titolo della pagina -->
+    <link rel="icon" href="/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml"> <!-- Icona del sito -->
     
     <!-- Configurazione Tailwind CSS CDN. Assicurati che darkMode: 'class' sia qui. -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
@@ -17,80 +17,83 @@
         }
     </script>
     
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749152259">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Il tuo file CSS personalizzato (se necessario, altrimenti può essere rimosso) -->
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749212287">
 </head>
-<body>
+<body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100"> <!-- Classi per lo sfondo e il testo, compatibili con dark mode -->
 
-    <div id="navbar-placeholder" style="width: 100%;"></div>
+    <div id="navbar-placeholder" class="w-full h-[52px] animate-pulse bg-gray-800"></div> <!-- Placeholder per la navbar caricata dinamicamente -->
 
-    <div id="navbar-spacer"></div>
-
-    <main class="container mx-auto px-4 py-4">
-        <h2 class="text-yellow-400 text-2xl font-bold text-center mt-3 mb-1">Upload Document</h2>
+    <main class="container mx-auto px-4 pt-20"> <!-- Contenitore principale con padding verticale per la navbar fissa -->
+        <h2 class="text-yellow-400 text-2xl font-bold text-center mt-3 mb-1">Upload Document</h2> <!-- Titolo della sezione -->
             
-        <div class="flex items-center justify-center">
-            <div id="upload-spinner" class="spinner hidden"></div>
-            <div id="upload-status" class="ml-4 text-sm font-semibold"></div>
-        </div>
-
-        <form id="upload-form" class="bg-white p-4 rounded-lg shadow-md max-w-lg mx-auto">
+        <form id="upload-form" class="bg-white p-4 rounded-lg shadow-md max-w-lg mx-auto dark:bg-gray-700"> <!-- Form di upload del documento, con stili per light/dark mode -->
                     
             <div class="mb-3">
-                <label for="year" class="block text-gray-700 text-sm font-bold mb-2">Year:</label>
-                <select id="year" name="year" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Loading Years...</option>
+                <label for="year" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Year:</label> <!-- Etichetta per il campo Anno -->
+                <select id="year" name="year" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                    <option value="">Loading Years...</option> <!-- Opzione di caricamento per il menu a tendina Anno -->
                 </select>
             </div>
             
             <div class="mb-3">
-                <label for="author" class="block text-gray-700 text-sm font-bold mb-2">Author:</label>
-                <input type="text" id="author" name="author" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100" readonly required>
+                <label for="author" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Author:</label> <!-- Etichetta per il campo Autore -->
+                <input type="text" id="author" name="author" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" readonly required> <!-- Campo di input per l'Autore (sola lettura) -->
             </div>
 
             <div class="mb-3">
-                <label for="subject" class="block text-gray-700 text-sm font-bold mb-2">Subject:</label>
-                <select id="subject" name="subject" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Loading Subjects...</option>
+                <label for="subject" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Subject:</label> <!-- Etichetta per il campo Materia -->
+                <select id="subject" name="subject" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                    <option value="">Loading Subjects...</option> <!-- Opzione di caricamento per il menu a tendina Materia -->
                 </select>
             </div>
 
             <div class="mb-3">
-                <label for="form" class="block text-gray-700 text-sm font-bold mb-2">Form:</label>
-                <select id="form" name="form" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Loading Forms...</option>
+                <label for="form" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Form:</label> <!-- Etichetta per il campo Classe -->
+                <select id="form" name="form" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                    <option value="">Loading Forms...</option> <!-- Opzione di caricamento per il menu a tendina Classe -->
                 </select>
             </div>
 
             <div class="mb-3">
-                <label for="room" class="block text-gray-700 text-sm font-bold mb-2">Room:</label>
-                <select id="room" name="room" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Loading Rooms...</option>
+                <label for="room" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Room:</label> <!-- Etichetta per il campo Stanza -->
+                <select id="room" name="room" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                    <option value="">Loading Rooms...</option> <!-- Opzione di caricamento per il menu a tendina Stanza -->
                 </select>
             </div>
 
             <div class="mb-3">
-                <label for="documentType" class="block text-gray-700 text-sm font-bold mb-2">Document Type:</label>
-                <select id="documentType" name="documentType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Loading Document Types...</option>
+                <label for="documentType" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Document Type:</label> <!-- Etichetta per il campo Tipo di Documento -->
+                <select id="documentType" name="documentType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                    <option value="">Loading Document Types...</option> <!-- Opzione di caricamento per il menu a tendina Tipo di Documento -->
                 </select>
             </div>
 
             <div class="mb-5">
-                <label for="file" class="block text-gray-700 text-sm font-bold mb-2">Choose File:</label>
-                <input type="file" id="file" name="file" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <label for="file" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Choose File:</label> <!-- Etichetta per il campo Scegli File -->
+                <input type="file" id="file" name="file" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required> <!-- Campo di input per la selezione del file -->
             </div>
 
-            <div class="flex justify-center mb-1"> 
+            <div class="flex items-center justify-center mb-1"> <!-- Contenitore per pulsante, spinner e stato -->
                 <button type="submit" id="upload-button" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Upload
                 </button>
+                <!-- Spinner e stato spostati qui dentro -->
+                <!-- Utilizzo di classi Tailwind per lo spinner (spinner classico con border-b-2) -->
+                <div id="upload-spinner" class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 ml-4 hidden"></div>
+                <div id="upload-status" class="ml-4 text-sm font-semibold text-gray-700 dark:text-gray-300"></div>
             </div>
 
         </form>
     </main>
 
-    <script src="/MwalimuHub/js/login.js?v=1749152259" defer></script> 
-    <script src="/MwalimuHub/js/upload.js?v=1749152259" defer></script> 
+    <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
+    <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
+    <script src="/MwalimuHub/js/config.js=1749212287"></script>
+
+    <!-- Importa i tuoi script come moduli ES6. L'ordine è importante per le dipendenze. -->
+    <script type="module" src="/MwalimuHub/js/utils.js?v=1749212287"></script>
+    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749212287"></script>
+    <script type="module" src="/MwalimuHub/js/upload.js?v=1749212287"></script>
 </body>
 </html>

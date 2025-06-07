@@ -1,68 +1,122 @@
 // js/upload.js
+import { CACHE_DURATION_MS, loadNavbar, initializeThemeToggle, updateUIForLoginState } from './utils.js'; // Importa updateUIForLoginState
+import { fetchAndCacheDropdownData, fetchAndCacheNewData } from './prefetch.js';
+import { logout } from './login.js'; // Importa la funzione logout
 
-// Assicurati che BACKEND_BASE_URL sia definito. Se non lo è, prendilo da login.js o definiscilo qui.
-//const BACKEND_BASE_URL = window.BACKEND_BASE_URL;
-
-// Riferimenti agli elementi del form e dello spinner
+// Riferimenti agli elementi del form e dello spinner, specifici di upload.html
 const uploadForm = document.getElementById('upload-form');
 const uploadButton = document.getElementById('upload-button');
 const uploadSpinner = document.getElementById('upload-spinner');
-const uploadStatus = document.getElementById('upload-status'); // Per messaggi di stato
-
-// --- MODIFICHE INIZIANO QUI ---
-
-// Costante per la durata di validità del cache in localStorage (deve corrispondere a quella in login.js)
-//const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 ore
-
-// --- MODIFICHE FINISCONO QUI ---
+const uploadStatus = document.getElementById('upload-status'); // Equivalente di resultDiv per questa pagina
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Carica la navbar (riutilizzando la funzione da login.js)
-    if (window.loadNavbar) {
-        await window.loadNavbar();
-    } else {
-        console.error("loadNavbar function not found. Ensure login.js is loaded correctly.");
-        const navbarPlaceholder = document.getElementById('navbar-placeholder');
-        if (navbarPlaceholder) {
-            navbarPlaceholder.innerHTML = '<nav id="main-navbar" class="bg-gray-800 text-white p-4 fixed w-full top-0 z-50">Loading Navbar...</nav>';
+    console.log('UPLOAD.JS: DOMContentLoaded event fired. Starting initialization.');
+
+    // Carica la navbar. Passiamo forceOpaque: true per renderla sempre opaca.
+    try {
+        console.log('UPLOAD.JS: Attempting to load navbar...');
+        await loadNavbar({ forceNavbarOpaque: true });
+        console.log('UPLOAD.JS: Navbar loaded successfully.');
+
+        // AGGIUNTA: Attacca l'evento al bottone di logout nel menu overlay, ora che la navbar è caricata
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Impedisce il comportamento predefinito del link
+                event.stopPropagation(); // Impedisce la propagazione al document
+                logout(); // Chiama la funzione di logout importata da login.js
+            });
+            console.log('UPLOAD.JS: Logout listener attached to navbar logout link.');
         }
+
+    } catch (error) {
+        console.error('UPLOAD.JS: Error loading navbar:', error);
+        if (uploadStatus) uploadStatus.textContent = `Error loading navbar: ${error.message}`;
+        if (uploadForm) uploadForm.style.display = 'none'; // Nasconde il form se la navbar non carica
+        return; // Ferma l'esecuzione se la navbar non carica
     }
 
-    // --- SNIPPET DI CONTROLLO LOGIN ---
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    // Inizializza il toggle del tema, ora che il pulsante dovrebbe essere nel DOM
+    initializeThemeToggle();
+    console.log('UPLOAD.JS: Theme toggle initialized.');
 
-    if (!isLoggedIn || !userData || !userData.email) { 
-        // Utente non loggato o dati utente mancanti/invalidi
+    // SNIPPET DI CONTROLLO LOGIN:
+    console.log('UPLOAD.JS: Checking login status...');
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    let userData = null; // Inizializza userData a null
+    try {
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) {
+            userData = JSON.parse(storedUserData);
+        }
+    } catch (e) {
+        console.error("UPLOAD.JS: Error parsing userData from localStorage:", e);
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userData');
+        isLoggedIn = false; // Forza il logout se i dati sono corrotti
+        userData = null;
+    }
+
+    console.log('UPLOAD.JS: isLoggedIn:', isLoggedIn, 'userData:', userData);
+
+    if (!isLoggedIn || !userData || !userData.email) {
+        console.warn('UPLOAD.JS: User not logged in or invalid user data. Redirecting to login page.');
+        // Utente non loggato o dati utente mancanti/invalidi: nascondi il form e reindirizza.
         if (uploadForm) uploadForm.style.display = 'none'; // Nascondi il form
-        if (uploadButton) uploadButton.disabled = true;
+        if (uploadButton) uploadButton.disabled = true; // Disabilita il pulsante di upload
         if (uploadSpinner) {
             uploadSpinner.classList.add('hidden');
             uploadSpinner.style.display = 'none';
         }
         if (uploadStatus) {
-            uploadStatus.textContent = 'Please log in to upload documents.';
+            uploadStatus.textContent = 'Please log in to upload documents.'; // Messaggio di stato
             uploadStatus.className = 'ml-4 text-lg font-semibold text-red-600';
         }
         // Reindirizza alla pagina di login dopo un breve ritardo
         setTimeout(() => {
-            window.location.href = "/MwalimuHub/index.html"; 
-        }, 3000); 
+            window.location.href = "/MwalimuHub/index.html";
+        }, 3000);
         return; // Ferma l'esecuzione dello script qui
     }
-    // --- FINE SNIPPET DI CONTROLLO LOGIN ---
+    // FINE SNIPPET DI CONTROLLO LOGIN
+
+    console.log('UPLOAD.JS: User is logged in. Proceeding with form initialization.');
+
+    // AGGIUNTA: Aggiorna la navbar con i dati dell'utente loggato.
+    // Non abbiamo elementi specifici della pagina come googleLoginSection qui, quindi passiamo null.
+    updateUIForLoginState(isLoggedIn, userData, null);
+    console.log('UPLOAD.JS: updateUIForLoginState called for navbar elements.');
 
     // Se l'utente è loggato, procedi con il caricamento dei dati del form
-    if (uploadForm) uploadForm.disabled = true; // Disabilita mentre carica i dropdown
-    if (uploadButton) uploadButton.disabled = true;
+    if (uploadForm) uploadForm.disabled = true; // Disabilita il form mentre carica i dropdown
+    if (uploadButton) uploadButton.disabled = true; // Disabilita il pulsante di upload
     if (uploadSpinner) {
         uploadSpinner.classList.remove('hidden');
         uploadSpinner.style.display = 'block';
     }
-    if (uploadStatus) uploadStatus.textContent = 'Caricamento dati form...';
-    
-    prefillAuthor(); // Popola l'autore con i dati dell'utente loggato
-    await populateDropdowns();
+    if (uploadStatus) uploadStatus.textContent = 'Loading form data...'; // Messaggio di caricamento
+    console.log('UPLOAD.JS: Form disabled, spinner shown, status updated.');
+
+    prefillAuthor(); // Pre-riempi il campo autore con i dati dell'utente loggato
+    console.log('UPLOAD.JS: Author prefill attempted.');
+
+    try {
+        console.log('UPLOAD.JS: Attempting to populate dropdowns...');
+        await populateDropdowns(); // Popola i menu a tendina
+        console.log('UPLOAD.JS: Dropdowns populated successfully.');
+    } catch (error) {
+        console.error('UPLOAD.JS: Error populating dropdowns:', error);
+        if (uploadStatus) uploadStatus.textContent = `Error populating form fields: ${error.message}`;
+        if (uploadForm) uploadForm.style.display = 'none'; // Nasconde il form se i dropdown non caricano
+        return;
+    }
+
+    // Esempio di utilizzo del nuovo prefetch se necessario in upload.js
+    // Potresti voler pre-caricare altri dati specifici della pagina di upload qui:
+    // console.log('UPLOAD.JS: Attempting to fetch other data...');
+    // await fetchAndCacheNewData('myOtherDataForUpload', 'some/other/endpoint/for/upload');
+    // console.log('UPLOAD.JS: Other data fetch attempted.');
+
 
     // Una volta caricati i dropdown, riabilita il form e nascondi lo spinner
     if (uploadForm) uploadForm.disabled = false;
@@ -71,183 +125,213 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadSpinner.classList.add('hidden');
         uploadSpinner.style.display = 'none';
     }
-    if (uploadStatus) uploadStatus.textContent = ''; 
+    if (uploadStatus) uploadStatus.textContent = ''; // Pulisci il messaggio di stato
+    console.log('UPLOAD.JS: Form re-enabled, spinner hidden, status cleared.');
 
+    // Attacca il listener per la sottomissione del form
     if (uploadForm) {
         uploadForm.addEventListener('submit', handleUpload);
+        console.log('UPLOAD.JS: Form submit listener attached.');
     }
 });
 
-// Funzione per pre-riempire il campo Author
+/**
+ * Pre-riempie il campo "Author" con il nome dell'utente loggato.
+ */
 function prefillAuthor() {
     const authorInput = document.getElementById('author');
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (authorInput && userData && userData.googleName) {
         authorInput.value = userData.googleName;
+        console.log('UPLOAD.JS: Author prefilled with:', userData.googleName);
     } else {
-        authorInput.value = 'Autore Sconosciuto'; // Fallback tradotto
+        authorInput.value = 'Unknown Author'; // Fallback
+        console.warn('UPLOAD.JS: Could not prefill author. User data might be missing or incomplete.');
     }
 }
 
-// --- MODIFICHE INIZIANO QUI: FUNZIONE populateDropdowns() ---
-// Funzione per popolare tutti i menu a tendina
+/**
+ * Popola tutti i menu a tendina del form di upload.
+ * Utilizza i dati dalla cache di localStorage o li recupera dal backend.
+ */
 async function populateDropdowns() {
+    console.log('UPLOAD.JS: Inside populateDropdowns function.');
+    // Riferimenti agli elementi select
     const yearSelect = document.getElementById('year');
     const subjectSelect = document.getElementById('subject');
     const formSelect = document.getElementById('form');
     const roomSelect = document.getElementById('room');
     const documentTypeSelect = document.getElementById('documentType');
 
-    let cachedData = null;
-    let cacheTimestamp = null;
-    const loadFromCacheStartTime = performance.now(); // Inizio misurazione tempo complessivo caricamento dropdown
+    let dataToPopulate = null;
+    let loadFromCacheStartTime = performance.now();
 
     try {
         const storedData = localStorage.getItem('dropdownData');
         const storedTimestamp = localStorage.getItem('dropdownDataTimestamp');
 
         if (storedData && storedTimestamp) {
-            cacheTimestamp = parseInt(storedTimestamp, 10);
+            const cacheTimestamp = parseInt(storedTimestamp, 10);
             const now = Date.now();
+            // Controlla se la cache è valida usando CACHE_DURATION_MS da utils.js
             if (now - cacheTimestamp < CACHE_DURATION_MS) {
-                cachedData = JSON.parse(storedData);
-                console.log(`Dati dropdown trovati in localStorage e validi. Tempo di verifica cache: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
-                // console.log('Dati da cache:', cachedData); // Puoi decommentare per vedere i dati della cache
+                dataToPopulate = JSON.parse(storedData);
+                console.log(`UPLOAD.JS: Dropdown data found in localStorage and valid. Cache check time: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
             } else {
-                console.log('Dati dropdown in localStorage scaduti, necessaria nuova fetch.');
+                console.log('UPLOAD.JS: Dropdown data in localStorage expired, new fetch needed.');
                 localStorage.removeItem('dropdownData'); // Pulisce i dati scaduti
                 localStorage.removeItem('dropdownDataTimestamp'); // Pulisce il timestamp scaduto
             }
         } else {
-            console.log('Nessun dato dropdown trovato in localStorage, necessaria nuova fetch.');
+            console.log('UPLOAD.JS: No dropdown data found in localStorage, new fetch needed.');
         }
     } catch (e) {
-        console.error('Errore nel parsing o accesso a localStorage:', e);
+        console.error('UPLOAD.JS: Error parsing or accessing localStorage for dropdown data:', e);
         localStorage.removeItem('dropdownData'); // Pulizia dati corrotti
         localStorage.removeItem('dropdownDataTimestamp'); // Pulizia timestamp corrotti
-        cachedData = null; // Forza la nuova fetch
+        dataToPopulate = null; // Forza la nuova fetch
     }
 
+    // Se i dati cachati non sono disponibili o non validi, recupera nuovi dati e cachali.
+    if (!dataToPopulate) {
+        console.log("UPLOAD.JS: Forcing re-fetching of dropdown data and cache update...");
+        // Chiama la funzione centralizzata di prefetch
+        try {
+            dataToPopulate = await fetchAndCacheDropdownData();
+            if (!dataToPopulate) {
+                console.error("UPLOAD.JS: Could not retrieve dropdown data after fetch attempt.");
+                throw new Error("Failed to fetch dropdown data."); // Rilancia l'errore per il try/catch esterno
+            }
+        } catch (error) {
+            console.error("UPLOAD.JS: fetchAndCacheDropdownData failed:", error);
+            uploadStatus.textContent = 'Error loading form data.';
+            uploadStatus.className = 'ml-4 text-lg font-semibold text-red-600';
+            throw error; // Rilancia l'errore per il try/catch nel DOMContentLoaded
+        }
+    }
+
+    // Configurazione per popolare ogni dropdown
     const dropdownsConfig = [
-        { selectElement: yearSelect, endpoint: 'drive/years', loadingText: 'Caricamento Anni...', errorText: 'Errore nel caricamento degli Anni', key: 'years' },
-        { selectElement: subjectSelect, endpoint: 'sheets/subjects', loadingText: 'Caricamento Materie...', errorText: 'Errore nel caricamento delle Materie', key: 'subjects' },
-        { selectElement: formSelect, endpoint: 'sheets/forms', loadingText: 'Caricamento Classi...', errorText: 'Errore nel caricamento delle Classi', key: 'forms' },
-        { selectElement: roomSelect, endpoint: 'sheets/rooms', loadingText: 'Caricamento Stanze...', errorText: 'Errore nel caricamento delle Stanze', key: 'rooms' },
-        { selectElement: documentTypeSelect, endpoint: 'sheets/types', loadingText: 'Caricamento Tipi di Documento...', errorText: 'Errore nel caricamento dei Tipi di Documento', key: 'documentTypes' }
+        { selectElement: yearSelect, key: 'years', loadingText: 'Loading Years...', errorText: 'Error loading Years' }, // Tradotto
+        { selectElement: subjectSelect, key: 'subjects', loadingText: 'Loading Subjects...', errorText: 'Error loading Subjects' }, // Tradotto
+        { selectElement: formSelect, key: 'forms', loadingText: 'Loading Forms...', errorText: 'Error loading Forms' }, // Tradotto
+        { selectElement: roomSelect, key: 'rooms', loadingText: 'Loading Rooms...', errorText: 'Error loading Rooms' }, // Tradotto
+        { selectElement: documentTypeSelect, key: 'documentTypes', loadingText: 'Loading Document Types...', errorText: 'Error loading Document Types' } // Tradotto
     ];
 
-    const populatePromises = dropdownsConfig.map(async config => {
-        const { selectElement, endpoint, loadingText, errorText, key } = config;
-        selectElement.innerHTML = `<option value="">${loadingText}</option>`; // Imposta lo stato di caricamento iniziale per ogni dropdown
+    // Itera sulla configurazione e popola i dropdown
+    dropdownsConfig.forEach(config => {
+        const { selectElement, key, loadingText, errorText } = config;
+        // Verifica che l'elemento select esista prima di manipolarlo
+        if (selectElement) {
+            selectElement.innerHTML = `<option value="">${loadingText}</option>`; // Imposta lo stato di caricamento iniziale
 
-        const itemStartTime = performance.now(); // Inizio misurazione per singolo item
-        let dataToUse = null;
-
-        if (cachedData && cachedData[key]) {
-            dataToUse = cachedData[key];
-            console.log(`Dropdown ${key}: Dati caricati da localStorage in ${(performance.now() - itemStartTime).toFixed(2)} ms.`);
-        } else {
-            // Se non c'è cachedData o il dato specifico è null (es. errore pre-fetching), esegui la fetch
-            console.log(`Dropdown ${key}: Esecuzione nuova fetch da backend.`);
-            try {
-                // Assicurati che BACKEND_BASE_URL sia disponibile globalmente (come esposto in login.js)
-                const response = await fetch(`${window.BACKEND_BASE_URL}/api/${endpoint}`);
-                if (!response.ok) {
-                    throw new Error(`Errore HTTP! status: ${response.status}`);
-                }
-                dataToUse = await response.json();
-                console.log(`Dropdown ${key}: Dati caricati da backend in ${(performance.now() - itemStartTime).toFixed(2)} ms.`);
-            } catch (error) {
-                console.error(`Errore nel recupero ${endpoint} per dropdown ${key}:`, error);
-                selectElement.innerHTML = `<option value="">${errorText}</option>`;
-                return; // Esce da questo map item, non popola
+            const items = dataToPopulate[key];
+            if (items && Array.isArray(items) && items.length > 0) {
+                selectElement.innerHTML = '<option value="">Select an option</option>'; // Tradotto
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    selectElement.appendChild(option);
+                });
+                console.log(`UPLOAD.JS: Dropdown '${key}' populated with ${items.length} items.`);
+            } else {
+                selectElement.innerHTML = `<option value="">${errorText || 'No options available'}</option>`; // Tradotto
+                console.warn(`UPLOAD.JS: Dropdown '${key}' could not be populated. No items found or data invalid.`);
             }
-        }
-
-        // Popola il dropdown con i dati ottenuti
-        selectElement.innerHTML = '<option value="">Seleziona un\'opzione</option>'; // Tradotto
-        if (dataToUse && Array.isArray(dataToUse) && dataToUse.length > 0) { // Aggiunto controllo Array.isArray
-            dataToUse.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                selectElement.appendChild(option);
-            });
         } else {
-            selectElement.innerHTML = `<option value="">Nessuna opzione disponibile</option>`; // Tradotto
+            console.error(`UPLOAD.JS: Select element with ID for key '${key}' not found.`);
         }
     });
 
-    await Promise.all(populatePromises); // Attendi che tutti i dropdown siano popolati
-    console.log(`Tutti i dropdown sono stati popolati. Tempo totale di popolamento: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
+    console.log(`UPLOAD.JS: All dropdowns population process completed. Total population time: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
 }
 
-// --- MODIFICHE FINISCONO QUI ---
-
-
-// Funzione per gestire l'upload del file
+/**
+ * Gestisce l'invio del form di upload del file al backend.
+ * @param {Event} event - L'evento di sottomissione del form.
+ */
 async function handleUpload(event) {
     event.preventDefault(); // Impedisce il submit standard del form
+    console.log('UPLOAD.JS: Handling form submission.');
 
     // Disabilita il pulsante e mostra lo spinner per l'upload
     uploadButton.disabled = true;
-    uploadSpinner.classList.remove('hidden');
-    uploadSpinner.style.display = 'block';
-    uploadStatus.textContent = 'Caricamento in corso...'; // Tradotto
+    if (uploadSpinner) {
+        uploadSpinner.classList.remove('hidden');
+        uploadSpinner.style.display = 'block';
+    }
+    uploadStatus.textContent = 'Uploading...'; // Tradotto
     uploadStatus.className = 'ml-4 text-sm font-semibold text-blue-600';
+    console.log('UPLOAD.JS: Upload initiated. Button disabled, spinner visible.');
 
     const formData = new FormData();
     const fileInput = document.getElementById('file');
 
     // Verifica se un file è stato selezionato
     if (!fileInput.files || fileInput.files.length === 0) {
-        uploadStatus.textContent = 'Caricamento Fallito: Seleziona un file.'; // Tradotto
+        uploadStatus.textContent = 'Upload Failed: Please select a file.'; // Tradotto
         uploadStatus.className = 'ml-4 text-sm font-semibold text-red-600';
         uploadButton.disabled = false;
-        uploadSpinner.classList.add('hidden');
-        uploadSpinner.style.display = 'none';
+        if (uploadSpinner) {
+            uploadSpinner.classList.add('hidden');
+            uploadSpinner.style.display = 'none';
+        }
+        console.warn('UPLOAD.JS: Upload failed: No file selected.');
         return; // Esci dalla funzione
     }
 
-    // Raccogli tutti i dati del form per la descrizione
+    // Raccogli tutti i dati del form per i metadati del documento
     const metadata = {
-        year: document.getElementById('year').value,
-        author: document.getElementById('author').value,
-        subject: document.getElementById('subject').value,
-        form: document.getElementById('form').value,
-        room: document.getElementById('room').value,
-        documentType: document.getElementById('documentType').value
+        year: document.getElementById('year')?.value,
+        author: document.getElementById('author')?.value,
+        subject: document.getElementById('subject')?.value,
+        form: document.getElementById('form')?.value,
+        room: document.getElementById('room')?.value,
+        documentType: document.getElementById('documentType')?.value
     };
+    console.log('UPLOAD.JS: Collected metadata:', metadata);
 
     // Aggiungi il file e la descrizione come stringa JSON
     formData.append('file', fileInput.files[0]);
     formData.append('description', JSON.stringify(metadata)); // Invia i metadati come stringa JSON nella descrizione
+    console.log('UPLOAD.JS: FormData prepared.');
 
     try {
+        // Usa window.BACKEND_BASE_URL definito in config.js
+        console.log('UPLOAD.JS: Sending upload request to backend...');
         const response = await fetch(`${window.BACKEND_BASE_URL}/api/upload`, {
             method: 'POST',
             body: formData // FormData viene gestito automaticamente con Content-Type: multipart/form-data
         });
 
         const result = await response.json();
+        console.log('UPLOAD.JS: Backend response received:', result);
 
         if (response.ok && result.success) {
-            uploadStatus.textContent = 'Caricamento Riuscito!'; // Tradotto
+            uploadStatus.textContent = 'Upload Successful!'; // Tradotto
             uploadStatus.className = 'ml-4 text-sm font-semibold text-green-600';
-            document.getElementById('upload-form').reset(); // Resetta il form
+            if (uploadForm) uploadForm.reset(); // Resetta il form
             prefillAuthor(); // Pre-riempi di nuovo l'autore dopo il reset
+            console.log('UPLOAD.JS: Upload successful. Form reset, author prefilled.');
         } else {
-            const errorMessage = result.message || 'Si è verificato un errore sconosciuto.'; // Tradotto
-            uploadStatus.textContent = `Caricamento Fallito: ${errorMessage}`; // Tradotto
+            const errorMessage = result.message || 'An unknown error occurred.'; // Tradotto
+            uploadStatus.textContent = `Upload failed:: ${errorMessage}`; // Tradotto
             uploadStatus.className = 'ml-4 text-sm font-semibold text-red-600';
+            console.error('UPLOAD.JS: Upload failed:', errorMessage);
         }
     } catch (error) {
-        console.error('Errore durante il caricamento:', error); // Tradotto
+        console.error('UPLOAD.JS: Error during upload request:', error); // Tradotto
         uploadStatus.textContent = `Caricamento Fallito: ${error.message}`; // Tradotto
         uploadStatus.className = 'ml-4 text-sm font-semibold text-red-600';
     } finally {
+        // Riabilita il pulsante e nascondi lo spinner
         uploadButton.disabled = false;
-        uploadSpinner.classList.add('hidden');
-        uploadSpinner.style.display = 'none';
+        if (uploadSpinner) {
+            uploadSpinner.classList.add('hidden');
+            uploadSpinner.style.display = 'none';
+        }
+        console.log('UPLOAD.JS: Upload process finished. Button re-enabled, spinner hidden.');
     }
 }

@@ -1,93 +1,105 @@
-// prefetch.js
+// js/prefetch.js
+import { CACHE_DURATION_MS } from './utils.js';
 
 /**
- * Avvia le chiamate di pre-fetching per i dati specificati RISVEGLIO SERVER BACKEND
- * Utilizza la cache globale `window.activePrefetchPromises` (inizializzata in config.js)
- * per evitare richieste duplicate e memorizza i dati recuperati in `sessionStorage`.
- * Include la misurazione del tempo per ogni singola chiamata fetch.
+ * Recupera e cache i dati dei dropdown dal backend.
+ * I dati vengono memorizzati in localStorage.
+ * @returns {Promise<Object|null>} L'oggetto dati recuperato, o null se si è verificato un errore.
  */
-async function  DataForNextPages() {
-    // Recupera la base URL del backend dalla variabile globale definita in config.js.
-    // È garantito che sia disponibile se config.js è caricato prima di questo script.
-    const BACKEND_BASE_URL = window.BACKEND_BASE_URL; 
+export async function fetchAndCacheDropdownData() {
+    console.log('Inizio fetching dati dropdown per localStorage...');
+    const fetchStartTime = performance.now();
 
-    // Definisci tutti gli endpoint che desideri pre-caricare.
-    // Ogni oggetto specifica l'endpoint API e la chiave per memorizzare i dati in sessionStorage.
-    const endpointsToPrefetch = [
-        // Dati per i dropdown del form
-        { endpoint: 'drive/years', storageKey: 'prefetchedYears' },
-        { endpoint: 'sheets/subjects', storageKey: 'prefetchedSubjects' },
-        { endpoint: 'sheets/forms', storageKey: 'prefetchedForms' },
-        { endpoint: 'sheets/rooms', storageKey: 'prefetchedRooms' },
-        { endpoint: 'sheets/types', storageKey: 'prefetchedTypes' },
-        // Dati per la lista di file
-        { endpoint: 'drive/files-list', storageKey: 'prefetchedFilesList' } // Sostituisci 'drive/files-list' con il tuo endpoint reale
-    ];
+    const endpoints = {
+        years: 'drive/years',
+        subjects: 'sheets/subjects',
+        forms: 'sheets/forms',
+        rooms: 'sheets/rooms',
+        documentTypes: 'sheets/types'
+    };
 
-    // Itera su ogni endpoint per avviare la chiamata di pre-fetching
-    endpointsToPrefetch.forEach(({ endpoint, storageKey }) => {
-        const fullUrl = `${BACKEND_BASE_URL}/api/${endpoint}`;
+    const fetchPromises = [];
+    const fetchedData = {};
 
-        // Controlla se una Promise per questo endpoint è già in corso nella cache globale.
-        // Se sì, salta per evitare richieste duplicate.
-        if (window.activePrefetchPromises[storageKey]) {
-            console.log(`[Prefetching - ${endpoint}] Richiesta già in corso o completata in questa sessione. Saltato.`);
-            return;
-        }
+    for (const key in endpoints) {
+        // Usa window.BACKEND_BASE_URL definito in config.js
+        const endpointUrl = `${window.BACKEND_BASE_URL}/api/${endpoints[key]}`;
+        const itemFetchStartTime = performance.now();
 
-        const startTime = performance.now(); // Inizio misurazione tempo per questa fetch
-
-        // Avvia la chiamata `fetch` e gestisci la Promise.
-        const prefetchPromise = fetch(fullUrl)
+        const promise = fetch(endpointUrl)
             .then(response => {
-                const endTime = performance.now(); // Fine misurazione tempo
-                const duration = endTime - startTime;
-
-                // Controlla se la risposta HTTP è OK (status 200-299).
                 if (!response.ok) {
-                    console.warn(`[Prefetching - ${endpoint}] Errore HTTP! Stato: ${response.status}. Tempo impiegato: ${duration.toFixed(2)} ms.`);
-                    throw new Error(`[Prefetching] Errore HTTP per ${endpoint}! Stato: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                // Parsa la risposta JSON.
-                console.log(`[Prefetching - ${endpoint}] Successo! Tempo impiegato: ${duration.toFixed(2)} ms.`);
                 return response.json();
             })
             .then(data => {
-                // Se la Promise si risolve con successo, memorizza i dati in sessionStorage.
-                sessionStorage.setItem(storageKey, JSON.stringify(data));
-                console.log(`[Prefetching - ${endpoint}] Dati memorizzati in sessionStorage.`);
-                return data; // Ritorna i dati risolti per chiunque attenda questa Promise.
+                fetchedData[key] = data;
+                console.log(`Dati per ${key} pre-caricati con successo in ${(performance.now() - itemFetchStartTime).toFixed(2)} ms.`);
             })
             .catch(error => {
-                // Gestisce eventuali errori di rete o errori HTTP non-OK.
-                // Il tempo di durata qui è già stato loggato nel blocco .then precedente se c'è stato un errore HTTP.
-                // Se l'errore è di rete (es. fetch fallita prima della risposta), il tempo verrà calcolato qui.
-                if (!error.message.includes('HTTP error')) { // Evita doppio log se errore HTTP
-                    const endTime = performance.now(); // Fine misurazione tempo per errore di rete
-                    const duration = endTime - startTime;
-                    console.error(`[Prefetching - ${endpoint}] Errore di rete:`, error);
-                    console.log(`[Prefetching - ${endpoint}] Chiamata fallita (errore di rete). Tempo impiegato: ${duration.toFixed(2)} ms.`);
-                }
-                throw error; // Rilancia l'errore per propagarlo se un altro script sta attendendo questa Promise.
-            })
-            .finally(() => {
-                // Rimuove la Promise dalla cache globale una volta che è stata risolta o rigettata.
-                delete window.activePrefetchPromises[storageKey];
+                console.error(`Errore durante il pre-fetching di ${key} da ${endpointUrl}:`, error);
+                fetchedData[key] = null;
             });
+        fetchPromises.push(promise);
+    }
 
-        // Memorizza la Promise nella cache globale. Questo è il cuore della deduplicazione.
-        window.activePrefetchPromises[storageKey] = prefetchPromise;
-    });
+    try {
+        await Promise.all(fetchPromises);
+        localStorage.setItem('dropdownData', JSON.stringify(fetchedData));
+        localStorage.setItem('dropdownDataTimestamp', Date.now().toString());
+        const fetchEndTime = performance.now();
+        console.log(`Pre-fetching di TUTTI i dati dropdown completato e salvato in localStorage in ${(fetchEndTime - fetchStartTime).toFixed(2)} ms.`);
+        return fetchedData;
+    } catch (error) {
+        console.error('Errore critico durante il pre-fetching complessivo dei dati dropdown:', error);
+        return null;
+    }
 }
 
-// Avvia la funzione di pre-fetching quando il DOM è completamente caricato.
-// Un piccolo ritardo (es. 500ms) è utile per non interferire con il rendering iniziale della homepage.
-document.addEventListener('DOMContentLoaded', () => {
-    // Verifica che window.BACKEND_BASE_URL sia disponibile prima di avviare le chiamate.
-    // Questo è un controllo di sicurezza, dato che config.js dovrebbe essere caricato prima.
-    if (window.BACKEND_BASE_URL) {
-        setTimeout(prefetchDataForNextPages, 500); 
+/**             FUNZIONE DA SISTEMARE PER IL RECUPERO DELLA LISTA DOCUMENTI IN ARCHIVIO
+ * Recupera e cache i dati GENERICIda un endpoint specificato.
+ * @param {string} dataKey - La chiave con cui i dati verranno memorizzati in localStorage.
+ * @param {string} endpointPath - Il percorso dell'endpoint API (es. 'users/list', 'products/all').
+ * @param {number} [ttl=CACHE_DURATION_MS] - Tempo di vita per la cache in millisecondi.
+ * @returns {Promise<Object|Array|null>} I dati recuperati, o null se si è verificato un errore o la cache non è valida.
+ */
+export async function fetchAndCacheNewData(dataKey, endpointPath, ttl = CACHE_DURATION_MS) {
+    console.log(`Inizio fetching e caching per ${dataKey}...`);
+    const fetchStartTime = performance.now();
+    // Usa window.BACKEND_BASE_URL definito in config.js
+    const endpointUrl = `${window.BACKEND_BASE_URL}/api/${endpointPath}`;
+
+    const storedData = localStorage.getItem(dataKey);
+    const storedTimestamp = localStorage.getItem(`${dataKey}Timestamp`);
+
+    if (storedData && storedTimestamp) {
+        const cacheTimestamp = parseInt(storedTimestamp, 10);
+        const now = Date.now();
+        if (now - cacheTimestamp < ttl) {
+            console.log(`Dati per ${dataKey} trovati in localStorage e validi. Tempo di verifica cache: ${(performance.now() - fetchStartTime).toFixed(2)} ms.`);
+            return JSON.parse(storedData);
+        } else {
+            console.log(`Dati per ${dataKey} in localStorage scaduti, necessaria nuova fetch.`);
+            localStorage.removeItem(dataKey);
+            localStorage.removeItem(`${dataKey}Timestamp`);
+        }
     } else {
-        console.error("ERRORE: window.BACKEND_BASE_URL non è definito. Assicurati che config.js sia caricato PRIMA di prefetch.js.");
+        console.log(`Nessun dato per ${dataKey} trovato in localStorage, necessaria nuova fetch.`);
     }
-});
+
+    try {
+        const response = await fetch(endpointUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        localStorage.setItem(dataKey, JSON.stringify(data));
+        localStorage.setItem(`${dataKey}Timestamp`, Date.now().toString());
+        console.log(`Dati per ${dataKey} pre-caricati con successo in ${(performance.now() - fetchStartTime).toFixed(2)} ms.`);
+        return data;
+    } catch (error) {
+        console.error(`Errore durante il pre-fetching di ${dataKey} da ${endpointUrl}:`, error);
+        return null;
+    }
+}
