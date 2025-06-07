@@ -295,7 +295,7 @@ export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
     if (mainNavbar) {
         // Assicurati che la navbar sia opaca e grigia subito
         mainNavbar.classList.remove('bg-transparent');
-        mainNavbar.classList.add('bg-red-800', 'bg-opacity-100');
+        mainNavbar.classList.add('bg-red-500', 'bg-opacity-100');
 
         // Applica l'animazione di pulse
         mainNavbar.classList.add('animate-pulse');
@@ -307,7 +307,7 @@ export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
             // Riabilita i listener per l'hover se la navbar non deve rimanere opaca forzatamente
             // (Assumendo che in questo contesto non sia forceOpaque, ma lo controlliamo per sicurezza)
             if (!mainNavbar.matches(':hover')) { // Solo se il mouse non è sopra la navbar
-                mainNavbar.classList.remove('bg-red-800', 'bg-opacity-100');
+                mainNavbar.classList.remove('bg-red-500', 'bg-opacity-100');
                 mainNavbar.classList.add('bg-transparent');
             }
             // Puoi aggiungere qui la logica per ripristinare il comportamento trasparente della navbar se desiderato

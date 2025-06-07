@@ -1,6 +1,6 @@
 // js/index.js
-import { loadNavbar, updateUIForLoginState, wakeUpBackend, initializeThemeToggle } from './utils.js';
-import { logout, handleCredentialResponse, setPageSpecificUIElements, simulateLogin, simulateLogout } from './login.js';
+import { loadNavbar, updateUIForLoginState, wakeUpBackend, initializeThemeToggle } from '/js/utils.js';
+import { logout, handleCredentialResponse, setPageSpecificUIElements, simulateLogin, simulateLogout } from '/js/login.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Riferimenti DOM specifici di index.html
