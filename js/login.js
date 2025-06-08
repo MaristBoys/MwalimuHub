@@ -8,7 +8,7 @@ import {
     menuOverlay,
     triggerNavbarPulse 
 } from '/MwalimuHub/js/utils.js';
-import { fetchAndCacheDropdownData, fetchAndCacheNewData } from '/MwalimuHub/js/prefetch.js';
+import { fetchAndCacheDropdownData, fetchAndCacheArchivedFiles } from '/MwalimuHub/js/prefetch.js';
 
 // Variabili per gli elementi DOM specifici della pagina che verranno passati da index.js
 // Queste variabili mantengono i riferimenti DOM tra le chiamate delle funzioni di login.js
@@ -111,9 +111,11 @@ export async function handleCredentialResponse(response) {
             triggerNavbarPulse();
             // Avvia il pre-fetching dei dati dopo un login riuscito (simultaneamente alla pulsazione)
             ///await fetchAndCacheDropdownData(); non so perchè await
-            fetchAndCacheDropdownData();
-            // Esempio per il nuovo prefetch
-            ///fetchAndCacheNewData('myOtherData', 'my-new-endpoint');
+            await fetchAndCacheDropdownData();
+            // Avvia il pre-fetching dei file archiviati per l'autore
+            console.log('Login.js: Pre-fetching archive data after successful login...');
+            const authorToPrefetch = res.googleName || ''; // Usa il googleName, o stringa vuota se non disponibile
+            await fetchAndCacheArchivedFiles(`archivedFiles-${authorToPrefetch}`, 'drive/list', { author: authorToPrefetch });
 
         } else {
             console.warn('LOGIN.JS: Login fallito:', data.message);

@@ -1,6 +1,8 @@
 // js/prefetch.js
 import { CACHE_DURATION_MS } from '/MwalimuHub/js/utils.js';
 
+const activeFetches = new Map(); // Mappa per tenere traccia delle fetch attive
+
 /**
  * Recupera e cache i dati dei dropdown dal backend.
  * I dati vengono memorizzati in localStorage.
@@ -57,49 +59,77 @@ export async function fetchAndCacheDropdownData() {
     }
 }
 
-/**             FUNZIONE DA SISTEMARE PER IL RECUPERO DELLA LISTA DOCUMENTI IN ARCHIVIO
- * Recupera e cache i dati GENERICIda un endpoint specificato.
+/**
+ * Recupera e cache i dati dei file archiviati dal backend, supportando richieste POST con un body.
  * @param {string} dataKey - La chiave con cui i dati verranno memorizzati in localStorage.
- * @param {string} endpointPath - Il percorso dell'endpoint API (es. 'users/list', 'products/all').
+ * @param {string} endpointPath - Il percorso dell'endpoint API (es. 'drive/list').
+ * @param {object} [postBody=null] - Oggetto JavaScript da inviare come corpo della richiesta POST. Se null, la richiesta è GET.
  * @param {number} [ttl=CACHE_DURATION_MS] - Tempo di vita per la cache in millisecondi.
  * @returns {Promise<Object|Array|null>} I dati recuperati, o null se si è verificato un errore o la cache non è valida.
  */
-export async function fetchAndCacheNewData(dataKey, endpointPath, ttl = CACHE_DURATION_MS) {
-    console.log(`Inizio fetching e caching per ${dataKey}...`);
-    const fetchStartTime = performance.now();
-    // Usa window.BACKEND_BASE_URL definito in config.js
-    const endpointUrl = `${window.BACKEND_BASE_URL}/api/${endpointPath}`;
+export async function fetchAndCacheArchivedFiles(dataKey, endpointPath, postBody = null, ttl = CACHE_DURATION_MS) { // <--- RINOMINATA QUI
+    console.log(`Inizio fetching e caching per ${dataKey} (Archived Files)...`); //
+    const fetchStartTime = performance.now(); //
+    const endpointUrl = `${window.BACKEND_BASE_URL}/api/${endpointPath}`; //
 
-    const storedData = localStorage.getItem(dataKey);
-    const storedTimestamp = localStorage.getItem(`${dataKey}Timestamp`);
+    // 1. Controlla se c'è già una fetch attiva per questa chiave
+    if (activeFetches.has(dataKey)) {
+        console.log(`Fetch per ${dataKey} già in corso. Restituisco la Promise esistente.`);
+        return activeFetches.get(dataKey);
+    }
 
-    if (storedData && storedTimestamp) {
-        const cacheTimestamp = parseInt(storedTimestamp, 10);
-        const now = Date.now();
-        if (now - cacheTimestamp < ttl) {
-            console.log(`Dati per ${dataKey} trovati in localStorage e validi. Tempo di verifica cache: ${(performance.now() - fetchStartTime).toFixed(2)} ms.`);
-            return JSON.parse(storedData);
+    const storedData = localStorage.getItem(dataKey); //
+    const storedTimestamp = localStorage.getItem(`${dataKey}Timestamp`); //
+
+    if (storedData && storedTimestamp) { //
+        const cacheTimestamp = parseInt(storedTimestamp, 10); //
+        const now = Date.now(); //
+        if (now - cacheTimestamp < ttl) { //
+            console.log(`Dati per ${dataKey} trovati in localStorage e validi. Tempo di verifica cache: ${(performance.now() - fetchStartTime).toFixed(2)} ms.`); //
+            return JSON.parse(storedData); //
         } else {
-            console.log(`Dati per ${dataKey} in localStorage scaduti, necessaria nuova fetch.`);
-            localStorage.removeItem(dataKey);
-            localStorage.removeItem(`${dataKey}Timestamp`);
+            console.log(`Dati per ${dataKey} in localStorage scaduti, necessaria nuova fetch.`); //
+            localStorage.removeItem(dataKey); //
+            localStorage.removeItem(`${dataKey}Timestamp`); //
         }
     } else {
-        console.log(`Nessun dato per ${dataKey} trovato in localStorage, necessaria nuova fetch.`);
+        console.log(`Nessun dato per ${dataKey} trovato in localStorage, necessaria nuova fetch.`); //
     }
 
-    try {
-        const response = await fetch(endpointUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+     // 2. Avvia la fetch effettiva e memorizza la sua Promise
+    const fetchPromise = (async () => { //
+        console.log(`Avvio fetch per ${dataKey} da ${endpointUrl}...`); //
+        try { //
+            const fetchOptions = { //
+                method: postBody ? 'POST' : 'GET', // Determina il metodo: POST se c'è un body, altrimenti GET
+                headers: {} //
+            }; //
+
+            if (postBody) { //
+                fetchOptions.headers['Content-Type'] = 'application/json'; // Imposta l'header per il JSON
+                fetchOptions.body = JSON.stringify(postBody); // Stringify il corpo della richiesta
+            } //
+
+            const response = await fetch(endpointUrl, fetchOptions); //
+            if (!response.ok) { //
+                throw new Error(`HTTP error! status: ${response.status}`); //
+            } //
+            const data = await response.json(); //
+            localStorage.setItem(dataKey, JSON.stringify(data)); //
+            localStorage.setItem(`${dataKey}Timestamp`, Date.now().toString()); //
+            console.log(`Dati per ${dataKey} pre-caricati con successo in ${(performance.now() - fetchStartTime).toFixed(2)} ms.`); //
+            return data; //
+        } catch (error) { //
+            console.error(`Errore durante il pre-fetching di ${dataKey} da ${endpointUrl}:`, error); //
+            return null; //
+        } finally { // Assicurati di rimuovere la Promise dalla cache
+            // 3. Rimuovi la Promise dalla mappa quando l'operazione è completata (successo o errore)
+            activeFetches.delete(dataKey);
         }
-        const data = await response.json();
-        localStorage.setItem(dataKey, JSON.stringify(data));
-        localStorage.setItem(`${dataKey}Timestamp`, Date.now().toString());
-        console.log(`Dati per ${dataKey} pre-caricati con successo in ${(performance.now() - fetchStartTime).toFixed(2)} ms.`);
-        return data;
-    } catch (error) {
-        console.error(`Errore durante il pre-fetching di ${dataKey} da ${endpointUrl}:`, error);
-        return null;
-    }
+    })();
+
+    activeFetches.set(dataKey, fetchPromise);
+    return fetchPromise;
+
+  
 }
