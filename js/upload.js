@@ -9,6 +9,9 @@ const uploadButton = document.getElementById('upload-button');
 const uploadSpinner = document.getElementById('upload-spinner');
 const uploadStatus = document.getElementById('upload-status'); // Equivalente di resultDiv per questa pagina
 
+// Variabile globale per conservare i dati originali delle room
+let allRoomsData = [];
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('UPLOAD.JS: DOMContentLoaded event fired. Starting initialization.');
 
@@ -111,6 +114,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Aggiungi l'event listener per il cambiamento del dropdown 'form'
+    // quando cambia form, filtra le room disponibili
+    const formSelect = document.getElementById('form');
+    if (formSelect) {
+        formSelect.addEventListener('change', filterRoomsByForm);
+        console.log('UPLOAD.JS: Event listener added to formSelect for room filtering.');
+    }
+    
+    
+    
+    
+    
     // Esempio di utilizzo del nuovo prefetch se necessario in upload.js
     // Potresti voler pre-caricare altri dati specifici della pagina di upload qui:
     // console.log('UPLOAD.JS: Attempting to fetch other data...');
@@ -210,11 +225,18 @@ async function populateDropdowns() {
         }
     }
 
+    // Salva i dati originali delle room
+    if (dataToPopulate && dataToPopulate.rooms) {
+        allRoomsData = dataToPopulate.rooms;
+        console.log('UPLOAD.JS: Original rooms data stored:', allRoomsData);
+    }
+
     // Configurazione per popolare ogni dropdown
     const dropdownsConfig = [
         { selectElement: yearSelect, key: 'years', loadingText: 'Loading Years...', errorText: 'Error loading Years' }, // Tradotto
         { selectElement: subjectSelect, key: 'subjects', loadingText: 'Loading Subjects...', errorText: 'Error loading Subjects' }, // Tradotto
         { selectElement: formSelect, key: 'forms', loadingText: 'Loading Forms...', errorText: 'Error loading Forms' }, // Tradotto
+        // Per le rooms, la popolaremo inizialmente con tutti i dati e poi la filtreremo
         { selectElement: roomSelect, key: 'rooms', loadingText: 'Loading Rooms...', errorText: 'Error loading Rooms' }, // Tradotto
         { selectElement: documentTypeSelect, key: 'documentTypes', loadingText: 'Loading Document Types...', errorText: 'Error loading Document Types' } // Tradotto
     ];
@@ -247,6 +269,61 @@ async function populateDropdowns() {
 
     console.log(`UPLOAD.JS: All dropdowns population process completed. Total population time: ${(performance.now() - loadFromCacheStartTime).toFixed(2)} ms.`);
 }
+
+/**
+ * Filtra le opzioni del dropdown "Room" in base all'ultimo carattere del valore selezionato nel dropdown "Form".
+ * Resetta la selezione della Room ogni volta che il Form cambia.
+ */
+function filterRoomsByForm() {
+    const formSelect = document.getElementById('form');
+    const roomSelect = document.getElementById('room');
+
+    if (!formSelect || !roomSelect || !allRoomsData.length) {
+        console.warn('UPLOAD.JS: Cannot filter rooms. Missing select elements or original rooms data.');
+        return;
+    }
+
+    const selectedFormValue = formSelect.value;
+    console.log('UPLOAD.JS: Form selected:', selectedFormValue);
+
+    // Resetta il dropdown "Room" e imposta l'opzione di default
+    roomSelect.innerHTML = '<option value="">Select an option</option>';
+    roomSelect.value = ''; // Deseleziona qualsiasi valore precedentemente scelto
+
+    if (selectedFormValue) {
+        // Estrai l'ultimo carattere del valore selezionato nel Form
+        const lastCharOfForm = selectedFormValue.slice(-1);
+        console.log('UPLOAD.JS: Last character of selected Form:', lastCharOfForm);
+
+        const filteredRooms = allRoomsData.filter(room => {
+            // Assicurati che 'room' sia una stringa e controlla se il primo carattere è uguale all'ultimo carattere del form
+            return typeof room === 'string' && room.length > 0 && room.slice(-2, -1) === lastCharOfForm;
+        });
+
+        if (filteredRooms.length > 0) {
+            filteredRooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room;
+                option.textContent = room;
+                roomSelect.appendChild(option);
+            });
+            console.log(`UPLOAD.JS: Room dropdown filtered. Showing ${filteredRooms.length} rooms starting with '${lastCharOfForm}'.`);
+        } else {
+            roomSelect.innerHTML = '<option value="">No rooms found for this form</option>';
+            console.log(`UPLOAD.JS: No rooms found matching form's last character: ${lastCharOfForm}`);
+        }
+    } else {
+        // Se nessun form è selezionato, ripopola con tutte le rooms originali
+        allRoomsData.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room;
+            option.textContent = room;
+            roomSelect.appendChild(option);
+        });
+        console.log('UPLOAD.JS: No form selected, repopulated room dropdown with all original rooms.');
+    }
+}
+
 
 /**
  * Gestisce l'invio del form di upload del file al backend.
