@@ -282,26 +282,38 @@ async function handleUpload(event) {
         return; // Esci dalla funzione
     }
 
-    // Raccogli tutti i dati del form per i metadati del documento
-    const metadata = {
-        year: document.getElementById('year')?.value,
-        author: document.getElementById('author')?.value,
-        subject: document.getElementById('subject')?.value,
-        form: document.getElementById('form')?.value,
-        room: document.getElementById('room')?.value,
-        documentType: document.getElementById('documentType')?.value
-    };
-    console.log('UPLOAD.JS: Collected metadata:', metadata);
 
-    // Aggiungi il file e la descrizione come stringa JSON
+    // AGGIUNGI IL FILE AL FORMDATA
     formData.append('file', fileInput.files[0]);
-    formData.append('description', JSON.stringify(metadata)); // Invia i metadati come stringa JSON nella descrizione
-    console.log('UPLOAD.JS: FormData prepared.');
+    console.log('UPLOAD.JS: File selected:', fileInput.files[0].name);
+
+    // AGGIUNGI OGNI CAMPO DEI METADATI COME CAMPO SEPARATO NEL FORMDATA
+    formData.append('year', document.getElementById('year')?.value || '');
+    formData.append('author', document.getElementById('author')?.value || '');
+    formData.append('subject', document.getElementById('subject')?.value || '');
+    formData.append('form', document.getElementById('form')?.value || '');
+    formData.append('room', document.getElementById('room')?.value || ''); // Campo facoltativo
+    formData.append('documentType', document.getElementById('documentType')?.value || '');
+
+    // AGGIUNGI il nome dell'utente custom property
+    //Recupera da localstorage il name dell'utente loggato - quello proveniente da sheet
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData && userData.name) {
+        formData.append('name', userData.name);
+        console.log('UPLOAD.JS: Appending userName to FormData:', userData.name);
+    } else {
+        formData.append('name', ''); // Aggiunge un campo vuoto
+        console.warn('UPLOAD.JS: name non trovato in localstorage userData. È stato aggiunto un campo vuoto.');
+    }
+
+    // il metadato descrizione viene compilato in automatico dal backend
+    // utilizza req.file.originalname per il nome del file originale
+     console.log('UPLOAD.JS: FormData prepared.');
 
     try {
         // Usa window.BACKEND_BASE_URL definito in config.js
         console.log('UPLOAD.JS: Sending upload request to backend...');
-        const response = await fetch(`${window.BACKEND_BASE_URL}/api/upload`, {
+        const response = await fetch(`${window.BACKEND_BASE_URL}/api/drive/upload`, {
             method: 'POST',
             body: formData // FormData viene gestito automaticamente con Content-Type: multipart/form-data
         });

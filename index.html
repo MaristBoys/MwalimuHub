@@ -19,11 +19,11 @@
     </script>
 
     <!-- Il tuo file CSS personalizzato -->
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749305999">
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749335230">
     <!-- Non serve qui, la libreria GSI verrà inizializzata con window.onload -->
     <!-- <script src="https://accounts.google.com/gsi/client" async defer></script> -->
     <!-- Questo script è obsoleto, verrà rimosso e gestito dal nuovo setup modulare -->
-    <!-- <script src="/MwalimuHub/js/login.js?v=1749305999" defer></script> -->
+    <!-- <script src="/MwalimuHub/js/login.js?v=1749335230" defer></script> -->
 </head>
 
 <body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100">
@@ -69,13 +69,13 @@
 
                     <!-- Contenitore del pulsante Google (inizialmente nascosto) -->
                     <div id="google-auth-button-wrapper" class="hidden">
-                        <div id="g_id_onload"
+                        <!--<div id="g_id_onload"
                             data-client_id="651622332732-hqg898c50786ii5rpa4iieo43gb6kmc8.apps.googleusercontent.com"
-                            data-callback="handleCredentialResponse" data-auto_prompt="false">
+                            data-auto_prompt="false">
                         </div>
                         <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline"
                             data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left">
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </section>
@@ -99,13 +99,21 @@
 
     <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
     <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
-    <script src="/MwalimuHub/js/config.js?v=1749305999"></script>
+    <script src="/MwalimuHub/js/config.js?v=1749335230"></script>
 
-    <!-- Importa i tuoi script come moduli ES6. L'ordine è importante per le dipendenze. -->
+<<<<<<< HEAD
+    <!-- Importa gli script come moduli ES6. L'ordine è importante per le dipendenze. -->
     <script type="module" src="/MwalimuHub/js/utils.js?v=1749305999"></script>
     <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749305999"></script>
     <script type="module" src="/MwalimuHub/js/login.js?v=1749305999"></script>
     <script type="module" src="/MwalimuHub/js/index.js?v=1749305999"></script>
+=======
+    <!-- Importa i tuoi script come moduli ES6. L'ordine è importante per le dipendenze. -->
+    <script type="module" src="/MwalimuHub/js/utils.js?v=1749335230"></script>
+    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749335230"></script>
+    <script type="module" src="/MwalimuHub/js/login.js?v=1749335230"></script>
+    <script type="module" src="/MwalimuHub/js/index.js?v=1749335230"></script>
+>>>>>>> 64c4d881ec9af3789702be4028b8ab359f19f44a
 
     <!-- Inizializzazione di Google Identity Services dopo che i moduli sono disponibili -->
     <script>

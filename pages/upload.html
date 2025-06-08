@@ -18,14 +18,14 @@
     </script>
     
     <!-- Il tuo file CSS personalizzato (se necessario, altrimenti può essere rimosso) -->
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749305999">
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749335230">
 </head>
 <body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100"> <!-- Classi per lo sfondo e il testo, compatibili con dark mode -->
 
     <div id="navbar-placeholder" class="w-full h-[52px] animate-pulse bg-gray-800"></div> <!-- Placeholder per la navbar caricata dinamicamente -->
 
-    <main class="container mx-auto px-4 pt-20"> <!-- Contenitore principale con padding verticale per la navbar fissa -->
-        <h2 class="text-yellow-400 text-2xl font-bold text-center mt-3 mb-1">Upload Document</h2> <!-- Titolo della sezione -->
+    <main class="container mx-auto px-4 pt-4 mt-10"> <!-- Contenitore principale con padding verticale per la navbar fissa -->
+        <h2 class="text-yellow-400 text-2xl font-bold text-center mt-3 mb-2">Upload Document</h2> <!-- Titolo della sezione -->
             
         <form id="upload-form" class="bg-white p-4 rounded-lg shadow-md max-w-lg mx-auto dark:bg-gray-700"> <!-- Form di upload del documento, con stili per light/dark mode -->
                     
@@ -57,7 +57,7 @@
 
             <div class="mb-3">
                 <label for="room" class="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">Room:</label> <!-- Etichetta per il campo Stanza -->
-                <select id="room" name="room" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500" required>
+                <select id="room" name="room" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-600 dark:text-white dark:border-gray-500">
                     <option value="">Loading Rooms...</option> <!-- Opzione di caricamento per il menu a tendina Stanza -->
                 </select>
             </div>
@@ -89,11 +89,11 @@
 
     <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
     <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
-    <script src="/MwalimuHub/js/config.js?v=1749305999"></script>
+    <script src="/MwalimuHub/js/config.js?v=1749335230"></script>
 
     <!-- Importa i tuoi script come moduli ES6. L'ordine è importante per le dipendenze. -->
-    <script type="module" src="/MwalimuHub/js/utils.js?v=1749305999"></script>
-    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749305999"></script>
-    <script type="module" src="/MwalimuHub/js/upload.js?v=1749305999"></script>
+    <script type="module" src="/MwalimuHub/js/utils.js?v=1749335230"></script>
+    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749335230"></script>
+    <script type="module" src="/MwalimuHub/js/upload.js?v=1749335230"></script>
 </body>
 </html>
