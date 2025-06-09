@@ -1,7 +1,7 @@
 // js/archive.js
-import { loadNavbar, initializeThemeToggle, buildArchivedFilesRequestParams, updateUIForLoginState } from '/js/utils.js';
-import { fetchAndCacheArchivedFiles } from '/js/prefetch.js';
-import { logout } from '/js/login.js';
+import { loadNavbar, initializeThemeToggle, buildArchivedFilesRequestParams, updateUIForLoginState } from '/MwalimuHub/js/utils.js';
+import { fetchAndCacheArchivedFiles } from '/MwalimuHub/js/prefetch.js';
+import { logout } from '/MwalimuHub/js/login.js';
 
 // Riferimenti agli elementi DOM
 const filterAuthorSelect = document.getElementById('filter-author');
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.warn('ARCHIVE.JS: User not logged in or invalid user data. Redirecting to login page.');
         documentsDataTable.clear().draw();
         setTimeout(() => {
-            window.location.href = "/index.html";
+            window.location.href = "/MwalimuHub/index.html";
         }, 3000);
         return;
     }

@@ -14,7 +14,9 @@ const fileList = [
     "js/login.js",
     "js/index.js",
     "js/upload.js",
-    "pages/upload.html"
+    "js/archive.js",
+    "pages/upload.html",
+    "pages/archive.html"
 ];
 
 // Percorso della directory principale
