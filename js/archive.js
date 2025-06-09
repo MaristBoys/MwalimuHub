@@ -83,12 +83,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             {
                 data: null,
                 title: 'Actions',
-                orderable: false,
+                orderable: false, // Le colonne con azioni di solito non sono ordinabili
                 render: function (data, type, row) {
-                    const viewLink = row.webViewLink ? `<a href="${row.webViewLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-1 px-2 rounded mr-1">View</a>` : '';
-                    const downloadLink = row.webContentLink ? `<a href="${row.webContentLink}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded mr-1">Download</a>` : '';
+                    // La funzionalità "View" è stata rimossa, quindi non generiamo più il link.
+                    // La funzionalità "Download" ora chiama la funzione globale downloadFile
+                    // che gestisce il download tramite il backend.
+                    const downloadButton = `<button onclick="downloadFile('${row.id}')" class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded mr-1">Download</button>`;
+                    // Il pulsante "Delete" è già corretto e chiama la funzione globale deleteFile
                     const deleteButton = `<button class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-2 rounded" onclick="deleteFile('${row.id}')">Delete</button>`;
-                    return `<div class="flex justify-center">${viewLink}${downloadLink}${deleteButton}</div>`;
+
+                    // Restituisci i pulsanti all'interno di un contenitore flessibile centrato
+                    return `<div class="flex justify-center">${downloadButton}${deleteButton}</div>`;
                 }
             }
         ],
@@ -376,6 +381,16 @@ async function loadArchivedFiles() {
         hideSpinner(); // Always hide spinner once the fetch (or error) is complete
     }
 }
+
+
+
+// Modifica questa funzione per usare la rotta del tuo backend
+window.downloadFile = (fileId) => {
+    // Apri una nuova finestra/tab che punta alla tua rotta di download del backend
+    // Il backend si occuperà di scaricare il file usando il Service Account
+    // e di inviarlo al browser dell'utente.
+   window.open(`${window.BACKEND_BASE_URL}/api/drive/download/${fileId}`, '_blank');
+};
 
 // Global function for delete (called from onclick)
 async function deleteFile(fileId) {

@@ -14,6 +14,14 @@ const resetFilterButton = document.getElementById('reset-filter-button');
 const refreshDataButton = document.getElementById('refresh-data-button');
 const loadingSpinner = document.getElementById('loadingSpinner'); // NEW: Reference to the spinner element
 
+// NUOVI RIFERIMENTI PER LO STORAGE
+const storageInfoSection = document.getElementById('storage-info-section');
+const totalStorageSpan = document.getElementById('total-storage');
+const usedStorageSpan = document.getElementById('used-storage');
+const availableStorageSpan = document.getElementById('available-storage');
+const trashStorageSpan = document.getElementById('trash-storage');
+const storageErrorMessageDiv = document.getElementById('storage-error-message');
+
 // Variabile globale per la tabella DataTables
 let documentsDataTable = null;
 let userData = null; // Variabile per memorizzare i dati dell'utente loggato
@@ -42,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      // Inizializza il toggle del tema, ora che il pulsante dovrebbe essere nel DOM
     initializeThemeToggle();
     console.log('ARCHIVE.JS: Navbar loaded and theme toggle initialized.');
+    
     // Inizializza DataTables per la tabella dei documenti
     documentsDataTable = $('#documentsTable').DataTable({
         responsive: true,
@@ -169,9 +178,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadArchivedFiles();
             // Dopo il refresh, riapplica i filtri frontend per mantenere lo stato
             applyFrontendFilters();});
+            // Richiama anche le info di storage per rinfrescarle
+            fetchAndDisplayStorageInfo(); // 
     }
     // Ricarica i file (ora la cache sarà vuota per quella chiave)
     await loadArchivedFiles();
+
+    // Fetch and display storage info on page load
+    fetchAndDisplayStorageInfo(); 
 });
 
 /**
@@ -191,6 +205,51 @@ function hideSpinner() {
         loadingSpinner.classList.add('hidden');
     }
 }
+
+// Funzione per recuperare e visualizzare le informazioni di storage di Google Drive
+async function fetchAndDisplayStorageInfo() {
+    if (!storageInfoSection || !totalStorageSpan || !usedStorageSpan || !availableStorageSpan || !trashStorageSpan || !storageErrorMessageDiv) {
+        console.warn('One or more storage info elements not found. Skipping display.');
+        return;
+    }
+
+    // Nascondi eventuali messaggi di errore precedenti
+    storageErrorMessageDiv.classList.add('hidden');
+    storageErrorMessageDiv.textContent = '';
+    // Mostra la sezione info storage, anche se i dati non sono ancora stati caricati
+    storageInfoSection.classList.remove('hidden');
+
+
+    try {
+        console.log('ARCHIVE.JS: Fetching storage information from backend...');
+        const response = await fetch(`${window.BACKEND_BASE_URL}/api/drive/storage-info`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            totalStorageSpan.textContent = data.total;
+            usedStorageSpan.textContent = data.used;
+            availableStorageSpan.textContent = data.available;
+            trashStorageSpan.textContent = data.trash;
+            console.log('ARCHIVE.JS: Storage information loaded successfully:', data);
+        } else {
+            console.error('ARCHIVE.JS: Failed to retrieve storage information:', data.message);
+            storageErrorMessageDiv.textContent = `Error: ${data.message}`;
+            storageErrorMessageDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('ARCHIVE.JS: Error fetching storage information:', error);
+        storageErrorMessageDiv.textContent = `Error loading storage info: ${error.message}`;
+        storageErrorMessageDiv.classList.remove('hidden');
+    }
+}
+
+
 
 /**
  * Popola dinamicamente le opzioni dei filtri select con i valori unici presenti nei dati.
@@ -223,12 +282,12 @@ function populateFilterOptions(files) {
         });
     };
 
-    populateSelect(filterYearSelect, uniqueYears, 'Filter by Year');
-    populateSelect(filterSubjectSelect, uniqueSubjects, 'Filter by Subject');
-    populateSelect(filterFormSelect, uniqueForms, 'Filter by Form');
-    populateSelect(filterRoomSelect, uniqueRooms, 'Filter by Room');
-    populateSelect(filterTypeSelect, uniqueDocumentTypes, 'Filter by Type');
-    populateSelect(filterAuthorSelect, uniqueAuthor, 'Filter by Author');
+    populateSelect(filterYearSelect, uniqueYears, 'Year');
+    populateSelect(filterSubjectSelect, uniqueSubjects, 'Subject');
+    populateSelect(filterFormSelect, uniqueForms, 'Form');
+    populateSelect(filterRoomSelect, uniqueRooms, 'Room');
+    populateSelect(filterTypeSelect, uniqueDocumentTypes, 'Type');
+    populateSelect(filterAuthorSelect, uniqueAuthor, 'Author');
 }
 
 /**
