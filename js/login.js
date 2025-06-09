@@ -5,8 +5,9 @@ import {
     googleAuthButtonWrapper,
     serverStatusMessage,
     updateUIForLoginState,
-    menuOverlay,
-    triggerNavbarPulse 
+    buildArchivedFilesRequestParams, // <--- NUOVA IMPORTAZIONE
+    //menuOverlay,
+    triggerNavbarPulse
 } from '/MwalimuHub/js/utils.js';
 import { fetchAndCacheDropdownData, fetchAndCacheArchivedFiles } from '/MwalimuHub/js/prefetch.js';
 
@@ -57,8 +58,8 @@ export async function handleCredentialResponse(response) {
         // Mostra lo spinner e il messaggio di attesa
         if (googleAuthButtonWrapper) googleAuthButtonWrapper.classList.add('hidden');
         if (backendLoadingSpinner) backendLoadingSpinner.classList.remove('hidden');
-        if (waitingForBackendMessage) waitingForBackendMessage.classList.remove('hidden');        
-        
+        if (waitingForBackendMessage) waitingForBackendMessage.classList.remove('hidden');
+
         // --- Ottieni Timezone, DateLocal e TimeLocal ---
         const now = new Date();
         const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Es. "Europe/Rome"
@@ -78,7 +79,7 @@ export async function handleCredentialResponse(response) {
         // --- CONSOLE.LOG PER TRACCIARE LA CHIAMATA DI LOGIN ---
         console.log(`LOGIN.JS: Effettuo chiamata al backend per il login: ${window.BACKEND_BASE_URL}/api/google-login`);
         console.log(`LOGIN.JS: ID Token inviato (primi 20 caratteri): ${response.credential.substring(0, 20)}...`);
- 
+
         // Invia l'ID token al backend per la verifica e l'autorizzazione
         const res = await fetch(`${window.BACKEND_BASE_URL}/api/auth/google-login`, {
             method: 'POST',
@@ -96,7 +97,7 @@ export async function handleCredentialResponse(response) {
 
         const data = await res.json();
         console.log('Backend response:', data);
-        
+
         // Nascondi spinner e messaggio di attesa indipendentemente dal risultato
         if (backendLoadingSpinner) backendLoadingSpinner.classList.add('hidden');
         if (waitingForBackendMessage) waitingForBackendMessage.classList.add('hidden');
@@ -112,23 +113,31 @@ export async function handleCredentialResponse(response) {
             // Avvia il pre-fetching dei dati dopo un login riuscito (simultaneamente alla pulsazione)
             ///await fetchAndCacheDropdownData(); non so perchè await
             await fetchAndCacheDropdownData();
+
             // Avvia il pre-fetching dei file archiviati per l'autore
             console.log('Login.js: Pre-fetching archive data after successful login...');
-            const authorToPrefetch = res.googleName || ''; // Usa il googleName, o stringa vuota se non disponibile
-            await fetchAndCacheArchivedFiles(`archivedFiles-${authorToPrefetch}`, 'drive/list', { author: authorToPrefetch });
+            // La funzione `buildArchivedFilesRequestParams` gestirà questo correttamente
+            // impostando il filtro a `all` per Admin/Headmaster/Deputy/Staff
+            // e usando `googleName` per Teacher.
+            const { cacheKey, postBody } = buildArchivedFilesRequestParams(data, ''); // Passa 'data' come userData e una stringa vuota per il filtro manuale
+            // Esegue la chiamata solo se la cacheKey è stata costruita (per prevenire chiamate con profili non validi)
+            // La funzione buildArchivedFilesRequestParams già gestisce i casi di userData non valido.
+            await fetchAndCacheArchivedFiles(cacheKey, 'drive/list', postBody);
 
         } else {
             console.warn('LOGIN.JS: Login fallito:', data.message);
             displayResult(`<p>Login failed: ${data.message}</p>`, 'error');
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userData');
+            localStorage.clear(); // Pulisce eventuali dati residui
             updateUIForLoginState(false, null, googleLoginSectionForUIUpdate);
         }
     } catch (error) {
         console.error('Error contacting backend:', error);
-        displayResult(`<p>Error contacting Server: ${error.message || error}</p>`, 'error');  
+        displayResult(`<p>Error contacting Server: ${error.message || error}</p>`, 'error');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userData');
+        localStorage.clear(); // Pulisce eventuali dati residui
         updateUIForLoginState(false, null, googleLoginSectionForUIUpdate);
     } finally {
         if (backendLoadingSpinner) backendLoadingSpinner.classList.add('hidden');
@@ -152,11 +161,11 @@ export async function logout() {
     try {
         // Recupera i dati dell'utente dal localStorage prima di rimuoverli
         const userData = JSON.parse(localStorage.getItem('userData'));
-     
+
         const userEmail = userData.email;
         const userName = userData.googleName || 'Unknown User'; // Usa il nome da userData o un fallback
         const userProfile = userData.profile || 'Unknown Profile'; // Usa il profilo da userData o un fallback
-        
+
         console.log(`LOGIN.JS: Dati di logout inviati: Email=${userEmail}, Nome=${userName}, Profilo=${userProfile}`);
 
         // --- Ottieni Timezone, DateLocal e TimeLocal anche per il Logout ---
@@ -203,12 +212,14 @@ export async function logout() {
         console.error('Errore durante la richiesta di logout al backend:', error);
         displayResult(`<p>Error while requesting logout to server: ${error.message || error}</p>`, 'error');
     } finally {
-         // Indipendentemente dall'esito della richiesta al backend,
+        // Indipendentemente dall'esito della richiesta al backend,
         // pulizia dello stato locale e della cache
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userData');
         localStorage.removeItem('dropdownData');
         localStorage.removeItem('dropdownDataTimestamp');
+        localStorage.clear(); // Pulisce eventuali dati residui
+        console.log('Stato locale e cache puliti dopo il logout.');
         ///localStorage.removeItem('myOtherData'); // Rimuovi il nuovo prefetch
         ///localStorage.removeItem('myOtherDataTimestamp'); // Rimuovi il timestamp del nuovo prefetch
 
@@ -268,11 +279,11 @@ window.logout = logout;
 
 /***********INIZIO PER SIMULAZIONE LOGINE E LOGOUT ***********/
 
- // Simula un login utente per scopi di test.
+// Simula un login utente per scopi di test.
 export function simulateLogin() {
     const message = "Simulating login...";
     console.log(message);
-    
+
     if (backendLoadingSpinner) backendLoadingSpinner.classList.remove('hidden');
     if (waitingForBackendMessage) waitingForBackendMessage.classList.remove('hidden');
     if (serverStatusMessage) serverStatusMessage.innerHTML = 'Simulating login...';
@@ -320,8 +331,7 @@ export function simulateLogout() {
     localStorage.removeItem('userData');
     localStorage.removeItem('dropdownData');
     localStorage.removeItem('dropdownDataTimestamp');
-    localStorage.removeItem('myOtherData');
-    localStorage.removeItem('myOtherDataTimestamp');
+    localStorage.clear(); // Pulisce eventuali dati residui
 
     displayResult(`<p class="font-semibold">Simulated Logout Successful!</p>`, 'success');
     console.log(successMessage);

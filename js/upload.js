@@ -1,6 +1,6 @@
 // js/upload.js
 import { CACHE_DURATION_MS, loadNavbar, initializeThemeToggle, updateUIForLoginState } from '/MwalimuHub/js/utils.js'; // Importa updateUIForLoginState
-import { fetchAndCacheDropdownData, fetchAndCacheNewData } from '/MwalimuHub/js/prefetch.js';
+import { fetchAndCacheDropdownData } from '/MwalimuHub/js/prefetch.js';
 import { logout } from '/MwalimuHub/js/login.js'; // Importa la funzione logout
 
 // Riferimenti agli elementi del form e dello spinner, specifici di upload.html

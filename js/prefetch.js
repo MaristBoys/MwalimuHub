@@ -1,7 +1,7 @@
 // js/prefetch.js
 import { CACHE_DURATION_MS } from '/MwalimuHub/js/utils.js';
 
-const activeFetches = new Map(); // Mappa per tenere traccia delle fetch attive
+const activeFetches = new Map(); // Mappa per tenere traccia delle fetch attive, per le richieste di file archiviati
 
 /**
  * Recupera e cache i dati dei dropdown dal backend.
@@ -80,6 +80,10 @@ export async function fetchAndCacheArchivedFiles(dataKey, endpointPath, postBody
 
     const storedData = localStorage.getItem(dataKey); //
     const storedTimestamp = localStorage.getItem(`${dataKey}Timestamp`); //
+
+    console.log(`Dati memorizzati - lista: ${storedData}`);
+    console.log(`Timestamp memorizzato - lista: ${storedTimestamp}`);
+
 
     if (storedData && storedTimestamp) { //
         const cacheTimestamp = parseInt(storedTimestamp, 10); //

@@ -318,3 +318,65 @@ export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
         }, numberOfPulses * pulseDurationMs);
     }
 }
+
+
+
+/**
+ * Costruisce la cacheKey e il postBody standardizzati per le richieste di file archiviati.
+ * Questa funzione deve essere chiamata SOLO DOPO che 'userData' è stato correttamente popolato.
+ *
+ * @param {Object} userData - L'oggetto utente contenente 'profile' e 'googleName'.
+ * @param {string} [currentAuthorFilter=''] - Il valore attuale del filtro autore (da filterAuthorInput.value.trim() in archive.js).
+ * Non usato per Teachers, ma per Admin/Headmaster/Deputy/Staff.
+ * Se non fornito, o vuoto, userà 'all' come fallback per la cacheKey
+ * e non aggiungerà il campo 'author' al postBody (comportamento di default).
+ * @returns {{cacheKey: string, postBody: Object}} Un oggetto contenente la cacheKey e il postBody.
+ */
+export function buildArchivedFilesRequestParams(userData, currentAuthorFilter = '') {
+    if (!userData || !userData.profile) {
+        console.error('UTILS: buildArchivedFilesRequestParams chiamato senza userData valido.');
+        // Fornisci un fallback o lancia un errore, a seconda di come vuoi gestire questo caso
+        return { cacheKey: 'archivedFiles-unknown-all', postBody: { profile: 'unknown' } };
+    }
+
+    const userProfile = userData.profile;
+    const userGoogleName = userData.googleName || '';
+
+    let cacheKeyAuthorPart;
+    let postBodyAuthorFilter; // Questo sarà googleName o author, o undefined
+
+    if (userProfile === 'Teacher') {
+        cacheKeyAuthorPart = userGoogleName || ''; // Usa il nome del Teacher
+        postBodyAuthorFilter = userGoogleName; // Invia googleName al backend
+    } else if (['Admin', 'Headmaster', 'Deputy', 'Staff'].includes(userProfile)) {
+        // Per Admin/Headmaster/Deputy/Staff:
+        // Il filtro `currentAuthorFilter` è quello che proviene dall'input (se presente).
+        // Se l'input è vuoto, il backend filtra per 'all' (cioè tutti).
+        // Quindi, la cacheKey deve riflettere se c'è un filtro specifico o meno.
+        // Se currentAuthorFilter è vuoto, la parte autore della cacheKey sarà 'all'.
+        cacheKeyAuthorPart = currentAuthorFilter || 'all';
+        // Se currentAuthorFilter è presente, lo aggiungiamo al postBody, altrimenti no (per il backend).
+        postBodyAuthorFilter = currentAuthorFilter || undefined; // undefined significa non includerlo
+    } else {
+        // Profilo non riconosciuto - default a "all"
+        console.warn(`UTILS: Profilo utente non riconosciuto per buildArchivedFilesRequestParams: ${userProfile}`);
+        cacheKeyAuthorPart = 'all';
+        postBodyAuthorFilter = undefined;
+    }
+
+    const cacheKey = `archivedFiles-${userProfile}-${cacheKeyAuthorPart}`;
+
+    let postBody = {
+        profile: userProfile
+    };
+    if (postBodyAuthorFilter !== undefined && postBodyAuthorFilter !== null && postBodyAuthorFilter !== '') {
+        // Aggiungi la proprietà corretta al postBody in base al profilo
+        if (userProfile === 'Teacher') {
+            postBody.googleName = postBodyAuthorFilter;
+        } else { // Admin, Headmaster, Deputy, Staff
+            postBody.author = postBodyAuthorFilter;
+        }
+    }
+
+    return { cacheKey, postBody };
+}
