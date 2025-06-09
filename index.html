@@ -19,11 +19,11 @@
     </script>
 
     <!-- Il tuo file CSS personalizzato -->
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749476795">
+    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749477369">
     <!-- Non serve qui, la libreria GSI verrà inizializzata con window.onload -->
     <!-- <script src="https://accounts.google.com/gsi/client" async defer></script> -->
     <!-- Questo script è obsoleto, verrà rimosso e gestito dal nuovo setup modulare -->
-    <!-- <script src="/MwalimuHub/js/login.js?v=1749476795" defer></script> -->
+    <!-- <script src="/MwalimuHub/js/login.js?v=1749477369" defer></script> -->
 </head>
 
 <body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100">
@@ -80,18 +80,13 @@
                 </div>
             </section>
         </div>
-        <div id="result" class="bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md p-6 mt-6 text-left hidden"></div>
+        <div class="flex items-center justify-center space-x-4 mt-6">
+            <div id="result" class="bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md p-6 text-left hidden"></div>
 
-        <!-- Pulsanti per simulare login/logout nascosti, non servono più, commentati i listener in index.js
-        <div class="flex justify-center space-x-4 mt-8 hidden">  
-            <button id="simulate-login-button"
-                class="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-200">Simula
-                Login</button>
-            <button id="simulate-logout-button"
-                class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition-colors duration-200">Simula
-                Logout</button>
+            <div id="logout-spinner-container" class="hidden flex justify-center items-center py-4">
+                <div id="logout-spinner" class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
         </div>
-        -->
     </main>
 
     <!-- Libreria client di Google Identity Services -->
@@ -99,13 +94,13 @@
 
     <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
     <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
-    <script src="/MwalimuHub/js/config.js?v=1749476795"></script>
+    <script src="/MwalimuHub/js/config.js?v=1749477369"></script>
 
     <!-- Importa gli script come moduli ES6. L'ordine è importante per le dipendenze. -->
-    <script type="module" src="/MwalimuHub/js/utils.js?v=1749476795"></script>
-    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749476795"></script>
-    <script type="module" src="/MwalimuHub/js/login.js?v=1749476795"></script>
-    <script type="module" src="/MwalimuHub/js/index.js?v=1749476795"></script>
+    <script type="module" src="/MwalimuHub/js/utils.js?v=1749477369"></script>
+    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749477369"></script>
+    <script type="module" src="/MwalimuHub/js/login.js?v=1749477369"></script>
+    <script type="module" src="/MwalimuHub/js/index.js?v=1749477369"></script>
 
     <!-- Inizializzazione di Google Identity Services dopo che i moduli sono disponibili -->
     <script>

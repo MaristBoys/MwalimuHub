@@ -7,8 +7,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const googleLoginSection = document.getElementById('google-login-section');
     const resultDiv = document.getElementById('result'); // Ottiene il riferimento a resultDiv qui!
 
+    // NEW: Ottieni riferimenti per lo spinner di logout
+    const logoutSpinner = document.getElementById('logout-spinner');
+
     // Passa questi riferimenti a login.js in modo che le sue funzioni possano usarli
-    setPageSpecificUIElements(googleLoginSection, resultDiv);
+    setPageSpecificUIElements(googleLoginSection, resultDiv, logoutSpinner);
+
 
     // Carica la navbar. Passa resultDiv per mostrare errori di caricamento navbar specifici della pagina.
     // Qui non forziamo l'opacità, quindi si mantiene il comportamento predefinito (trasparente con hover)

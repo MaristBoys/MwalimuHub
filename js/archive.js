@@ -14,6 +14,14 @@ const resetFilterButton = document.getElementById('reset-filter-button');
 const refreshDataButton = document.getElementById('refresh-data-button');
 const loadingSpinner = document.getElementById('loadingSpinner'); // NEW: Reference to the spinner element
 
+// NUOVI RIFERIMENTI PER LO STORAGE
+const storageInfoSection = document.getElementById('storage-info-section');
+const totalStorageSpan = document.getElementById('total-storage');
+const usedStorageSpan = document.getElementById('used-storage');
+const availableStorageSpan = document.getElementById('available-storage');
+const trashStorageSpan = document.getElementById('trash-storage');
+const storageErrorMessageDiv = document.getElementById('storage-error-message');
+
 // Variabile globale per la tabella DataTables
 let documentsDataTable = null;
 let userData = null; // Variabile per memorizzare i dati dell'utente loggato
@@ -39,8 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+     // Inizializza il toggle del tema, ora che il pulsante dovrebbe essere nel DOM
     initializeThemeToggle();
-
+    console.log('ARCHIVE.JS: Navbar loaded and theme toggle initialized.');
+    
+    // Inizializza DataTables per la tabella dei documenti
     documentsDataTable = $('#documentsTable').DataTable({
         responsive: true,
         paging: true,
@@ -94,8 +105,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         dom: '<"flex justify-between items-center mb-4"lf><"overflow-x-auto"t><"flex justify-between items-center mt-4"ip>',
     });
-
-    // Controllo login e popolamento userData
+    
+        
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     try {
         const storedUserData = localStorage.getItem('userData');
@@ -109,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         userData = null; // Assicurati che sia null in caso di errore
     }
 
+    console.log('ARCHIVE.JS: User login state:', isLoggedIn, 'User data:', userData);
     if (!isLoggedIn || !userData || !userData.email) {
         console.warn('ARCHIVE.JS: User not logged in or invalid user data. Redirecting to login page.');
         documentsDataTable.clear().draw();
@@ -117,9 +129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 3000);
         return;
     }
-
+    console.log('ARCHIVE.JS: User is logged in. Proceeding to load archived files.');
     updateUIForLoginState(isLoggedIn, userData, null);
-    
+        
     // Aggiungi listener per tutti i nuovi filtri sulla Datatable
     filterYearSelect.addEventListener('change', applyFrontendFilters);
     filterSubjectSelect.addEventListener('change', applyFrontendFilters);
@@ -130,7 +142,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // Listeners for filter and refresh buttons
-
     if (resetFilterButton) {
         resetFilterButton.addEventListener('click', () => {
             if (userData.profile === 'Teacher') {
@@ -148,18 +159,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyFrontendFilters(); // Applica i filtri dopo il reset
         });
     }
-
+    
+    // Listener per il pulsante Refresh Data 
     if (refreshDataButton) {
-        refreshDataButton.addEventListener('click', () => {
-            // No need to pass currentAuthorFilter to removeItem, as cache key will now incorporate profile/googleName
-            localStorage.removeItem(`archivedFiles-${userData.profile}-${userData.googleName || 'all'}`);
-            localStorage.removeItem(`archivedFiles-${userData.profile}-${userData.googleName || 'all'}Timestamp`);
-            loadArchivedFiles(); // Questo ricarica dal backend
-        });
+        refreshDataButton.addEventListener('click', async () => {
+            
+             // Calcola la cacheKey corrente
+            const { cacheKey } = buildArchivedFilesRequestParams(
+                userData,
+                filterAuthorSelect ? filterAuthorSelect.value : ''
+            );
+            
+            // Rimuovi le chiavi di cache relative ai file archiviati
+            localStorage.removeItem(cacheKey);
+            localStorage.removeItem(`${cacheKey}Timestamp`);
+            
+            // Ricarica i file (ora la cache sarà vuota per quella chiave)
+            await loadArchivedFiles();
+            // Dopo il refresh, riapplica i filtri frontend per mantenere lo stato
+            applyFrontendFilters();});
+            // Richiama anche le info di storage per rinfrescarle
+            fetchAndDisplayStorageInfo(); // 
     }
-
-    // Load the file list on page start
+    // Ricarica i file (ora la cache sarà vuota per quella chiave)
     await loadArchivedFiles();
+
+    // Fetch and display storage info on page load
+    fetchAndDisplayStorageInfo(); 
 });
 
 /**
@@ -180,6 +206,51 @@ function hideSpinner() {
     }
 }
 
+// Funzione per recuperare e visualizzare le informazioni di storage di Google Drive
+async function fetchAndDisplayStorageInfo() {
+    if (!storageInfoSection || !totalStorageSpan || !usedStorageSpan || !availableStorageSpan || !trashStorageSpan || !storageErrorMessageDiv) {
+        console.warn('One or more storage info elements not found. Skipping display.');
+        return;
+    }
+
+    // Nascondi eventuali messaggi di errore precedenti
+    storageErrorMessageDiv.classList.add('hidden');
+    storageErrorMessageDiv.textContent = '';
+    // Mostra la sezione info storage, anche se i dati non sono ancora stati caricati
+    storageInfoSection.classList.remove('hidden');
+
+
+    try {
+        console.log('ARCHIVE.JS: Fetching storage information from backend...');
+        const response = await fetch(`${window.BACKEND_BASE_URL}/api/drive/storage-info`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            totalStorageSpan.textContent = data.total;
+            usedStorageSpan.textContent = data.used;
+            availableStorageSpan.textContent = data.available;
+            trashStorageSpan.textContent = data.trash;
+            console.log('ARCHIVE.JS: Storage information loaded successfully:', data);
+        } else {
+            console.error('ARCHIVE.JS: Failed to retrieve storage information:', data.message);
+            storageErrorMessageDiv.textContent = `Error: ${data.message}`;
+            storageErrorMessageDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('ARCHIVE.JS: Error fetching storage information:', error);
+        storageErrorMessageDiv.textContent = `Error loading storage info: ${error.message}`;
+        storageErrorMessageDiv.classList.remove('hidden');
+    }
+}
+
+
+
 /**
  * Popola dinamicamente le opzioni dei filtri select con i valori unici presenti nei dati.
  * @param {Array} files - L'array di oggetti file.
@@ -193,8 +264,6 @@ function populateFilterOptions(files) {
             return (file.properties && file.properties[prop]) ? file.properties[prop] : undefined;
         }).filter(Boolean))].sort(); // filter(Boolean) rimuoverà gli 'undefined' e altri valori falsy
     };
-
-
 
     const uniqueYears = getUniqueValues('year');
     const uniqueSubjects = getUniqueValues('subject');
@@ -213,12 +282,12 @@ function populateFilterOptions(files) {
         });
     };
 
-    populateSelect(filterYearSelect, uniqueYears, 'Filter by Year');
-    populateSelect(filterSubjectSelect, uniqueSubjects, 'Filter by Subject');
-    populateSelect(filterFormSelect, uniqueForms, 'Filter by Form');
-    populateSelect(filterRoomSelect, uniqueRooms, 'Filter by Room');
-    populateSelect(filterTypeSelect, uniqueDocumentTypes, 'Filter by Type');
-    populateSelect(filterAuthorSelect, uniqueAuthor, 'Filter by Author');
+    populateSelect(filterYearSelect, uniqueYears, 'Year');
+    populateSelect(filterSubjectSelect, uniqueSubjects, 'Subject');
+    populateSelect(filterFormSelect, uniqueForms, 'Form');
+    populateSelect(filterRoomSelect, uniqueRooms, 'Room');
+    populateSelect(filterTypeSelect, uniqueDocumentTypes, 'Type');
+    populateSelect(filterAuthorSelect, uniqueAuthor, 'Author');
 }
 
 /**
