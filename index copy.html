@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marist Boys - MwalimuHub</title>
-    <link rel="icon" href="/MwalimuHub/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/Marist_Brothers_monogram.svg" type="image/svg+xml">
 
     <!-- Configurazione Tailwind CSS CDN. Assicurati che darkMode: 'class' sia qui. -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
@@ -19,11 +19,11 @@
     </script>
 
     <!-- Il tuo file CSS personalizzato -->
-    <link rel="stylesheet" href="/MwalimuHub/css/style.css?v=1749496541">
+    <link rel="stylesheet" href="/css/style.css?v=1749496541">
     <!-- Non serve qui, la libreria GSI verrà inizializzata con window.onload -->
     <!-- <script src="https://accounts.google.com/gsi/client" async defer></script> -->
     <!-- Questo script è obsoleto, verrà rimosso e gestito dal nuovo setup modulare -->
-    <!-- <script src="/MwalimuHub/js/login.js?v=1749496541" defer></script> -->
+    <!-- <script src="/js/login.js?v=1749496541" defer></script> -->
 </head>
 
 <body class="bg-gray-100 dark:bg-[#1f1f1f] text-gray-800 dark:text-gray-100">
@@ -31,13 +31,13 @@
     <div id="navbar-placeholder" class="w-full h-[52px] animate-pulse bg-gray-800"></div>
 
     <!-- Header Image -->
-    <div class="w-full h-[250px] bg-cover bg-center mb-1" style="background-image: url('/MwalimuHub/assets/header.jpg');"></div>
+    <div class="w-full h-[250px] bg-cover bg-center mb-1" style="background-image: url('/assets/header.jpg');"></div>
 
     <!-- Header Content -->
     <header
         class="w-[90%] max-w-[700px] mx-auto text-center p-4 relative bg-white dark:bg-[#2a2a2a] rounded-[20px] shadow-md dark:shadow-lg mt-[20px] z-[10]">
         <div class="flex flex-col items-center gap-2.5">
-            <img src="/MwalimuHub/assets/Marist_Brothers_monogram.svg" alt="Logo Marist"
+            <img src="/assets/Marist_Brothers_monogram.svg" alt="Logo Marist"
                 class="w-20 h-20 rounded-full shadow-md" />
             <h1 class="text-3xl font-bold text-gray-800 dark:text-yellow-400">Marist Boys</h1>
             <h2 class="text-xl text-gray-600 dark:text-yellow-300">MwalimuHub</h2>
@@ -65,7 +65,6 @@
                             class="border-4 border-gray-200 border-l-blue-500 rounded-full w-8 h-8 animate-spin"></div>
                         <p id="server-status-message" class="mt-2 text-gray-600 dark:text-gray-300">Waiting for server
                             response...</p>
-                        <p id="countdown-timer" class="font-bold"></p>
                     </div>
 
                     <!-- Contenitore del pulsante Google (inizialmente nascosto) -->
@@ -95,13 +94,13 @@
 
     <!-- Importa il file di configurazione (SCRIPT TRADIZIONALE, NON MODULO ES6) -->
     <!-- DEVE ESSERE CARICATO PRIMA DI QUALSIASI MODULO CHE USA window.BACKEND_BASE_URL -->
-    <script src="/MwalimuHub/js/config.js?v=1749496541"></script>
+    <script src="/js/config.js?v=1749496541"></script>
 
     <!-- Importa gli script come moduli ES6. L'ordine è importante per le dipendenze. -->
-    <script type="module" src="/MwalimuHub/js/utils.js?v=1749496541"></script>
-    <script type="module" src="/MwalimuHub/js/prefetch.js?v=1749496541"></script>
-    <script type="module" src="/MwalimuHub/js/login.js?v=1749496541"></script>
-    <script type="module" src="/MwalimuHub/js/index.js?v=1749496541"></script>
+    <script type="module" src="/js/utils.js?v=1749496541"></script>
+    <script type="module" src="/js/prefetch.js?v=1749496541"></script>
+    <script type="module" src="/js/login.js?v=1749496541"></script>
+    <script type="module" src="/js/index.js?v=1749496541"></script>
 
     <!-- Inizializzazione di Google Identity Services dopo che i moduli sono disponibili -->
     <script>

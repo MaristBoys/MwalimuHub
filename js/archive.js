@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ricarica i file (ora la cache sarà vuota per quella chiave)
     await loadArchivedFiles();
 
-    // Fetch and display storage info on page load
+    // Fetch and display storage info on page load - lo spazio in google drive
     fetchAndDisplayStorageInfo(); 
 });
 

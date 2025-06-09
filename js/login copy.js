@@ -15,6 +15,11 @@ import { fetchAndCacheDropdownData, fetchAndCacheArchivedFiles } from '/js/prefe
 // Queste variabili mantengono i riferimenti DOM tra le chiamate delle funzioni di login.js
 let googleLoginSectionForUIUpdate = null;
 let resultDivForUIUpdate = null;
+// NEW: Riferimento per lo spinner di logout
+let logoutSpinner = null;
+
+
+
 
 function displayResult(messageHtml, type = 'info') {
     if (resultDivForUIUpdate) {
@@ -154,9 +159,15 @@ export async function handleCredentialResponse(response) {
  * Gestisce il processo di logout dell'utente.
  */
 export async function logout() {
+    // NEW: Mostra lo spinner e il messaggio di logout
+    if (logoutSpinner) logoutSpinner.classList.remove('hidden');
     displayResult('<p class="text-gray-600">Logging out...</p>', 'info'); // Mostra subito il messaggio di logout
     // CONSOLE.LOG PER TRACCIARE LA CHIAMATA DI LOGOUT DAL FRONTEBD
     console.log(`LOGIN.JS: Effettuo chiamata al backend per il logout: ${window.BACKEND_BASE_URL}/api/logout`);
+
+    // NEW: Reindirizza immediatamente
+    // Sposta questa riga qui per un reindirizzamento più rapido.
+    window.location.replace("/index.html");
 
     try {
         // Recupera i dati dell'utente dal localStorage prima di rimuoverli
@@ -220,9 +231,7 @@ export async function logout() {
         localStorage.removeItem('dropdownDataTimestamp');
         localStorage.clear(); // Pulisce eventuali dati residui
         console.log('Stato locale e cache puliti dopo il logout.');
-        ///localStorage.removeItem('myOtherData'); // Rimuovi il nuovo prefetch
-        ///localStorage.removeItem('myOtherDataTimestamp'); // Rimuovi il timestamp del nuovo prefetch
-
+      
         // Aggiorna lo stato UI dopo il logout
         updateUIForLoginState(false, null, googleLoginSectionForUIUpdate);
 
@@ -232,29 +241,15 @@ export async function logout() {
             console.log('Google auto-select disabilitato.');
             // Il messaggio qui verrà sovrascritto dal reindirizzamento
             // displayResult('Google auto-select disabilitato.', 'info'); 
-
-            ///const googleButtonContainer = document.querySelector('.g_id_signin');
-            ///if (googleButtonContainer) {
-            ///    google.accounts.id.renderButton(
-            ///        googleButtonContainer,
-            ///        {
-            ///            type: "standard",
-            ///            size: "large",
-            ///            theme: "outline",
-            ///            text: "sign_in_with",
-            ///            shape: "rectangular",
-            ///            logo_alignment: "left"
-            ///        }
-            ///    );
-            ///    console.log('Google button re-render richiesto.');
-            ///    // Il messaggio qui verrà sovrascritto dal reindirizzamento
-            ///    // displayResult('Google button re-render richiesto.', 'info');
-            ///}
         }
-        // Reindirizza alla pagina index.html dopo un breve ritardo per permettere di vedere il messaggio di logout
-        setTimeout(() => {
-            window.location.replace("/index.html");
-        }, 1500); // Ritardo di 1.5 secondi
+        /// Reindirizza alla pagina index.html dopo un breve ritardo per permettere di vedere il messaggio di logout
+        /// lo fa subito, ma il messaggio di logout viene mostrato prima del reindirizzamento.
+        ///setTimeout(() => {
+        ///    window.location.replace("/index.html");
+        ///}, 1500); // Ritardo di 1.5 secondi
+        
+        // NEW: Nascondi spinner e messaggio di logout una volta completata la pulizia
+        if (logoutSpinner) logoutSpinner.classList.add('hidden');
     }
 }
 
@@ -264,10 +259,11 @@ export async function logout() {
  * @param {HTMLElement} googleLoginSection - Riferimento alla sezione di login di Google.
  * @param {HTMLElement} resultDiv - Riferimento al div per i messaggi di risultato.
  */
-export function setPageSpecificUIElements(googleLoginSection, resultDiv) {
+export function setPageSpecificUIElements(googleLoginSection, resultDiv, spinner) {
     googleLoginSectionForUIUpdate = googleLoginSection;
     resultDivForUIUpdate = resultDiv;
-}
+    logoutSpinner = spinner; // NEW: Assegna il riferimento allo spinner di logout
+    }
 
 // Espone le funzioni di login e logout globalmente per l'uso con Google Identity Services
 // e per retrocompatibilità con eventuali handler onclick nell'HTML.

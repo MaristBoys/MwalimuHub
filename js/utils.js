@@ -23,6 +23,59 @@ export let uploadLink;
 // Stato per la visibilità del menu overlay
 export let isMenuOverlayOpen = false;
 
+
+// NEW: Riferimento e variabili INTERNE per il conto alla rovescia (non più esportate)
+let countdownInterval = null;
+let countdownSeconds = 90;
+const countdownTimerElement = document.getElementById('countdown-timer'); // non export se usato solo qui
+
+/**
+ * Funzione per avviare il conto alla rovescia. (NON ESPORTATA)
+ */
+function startCountdown() {
+    console.log("DEBUG: startCountdown() called from utils.js."); // DEBUG
+    countdownSeconds = 90; // Reset del timer
+    if (countdownTimerElement) {
+        countdownTimerElement.textContent = `(${countdownSeconds}s)`;
+        console.log("DEBUG: Initial countdown text set to:", countdownTimerElement.textContent); // DEBUG
+    } else {
+        console.warn("DEBUG: countdown-timer element not found in DOM when trying to start countdown (from utils.js)."); // DEBUG
+    }
+
+    clearInterval(countdownInterval); // Assicurati di pulire qualsiasi intervallo precedente
+
+    countdownInterval = setInterval(() => {
+        countdownSeconds--;
+        if (countdownTimerElement) {
+            countdownTimerElement.textContent = `(${countdownSeconds}s)`;
+        }
+
+        if (countdownSeconds <= 0) {
+            clearInterval(countdownInterval);
+            if (countdownTimerElement) {
+                countdownTimerElement.textContent = ''; // Pulisci il conto alla rovescia
+                console.log("DEBUG: Countdown finished, text cleared (from utils.js)."); // DEBUG
+            }
+            console.warn('UTILS.JS: Backend response timed out during wakeup.');
+            // Qui non nascondiamo gli spinner/messaggi, lo fa il finally di wakeUpBackend
+            // per evitare stati inconsistenti.
+        }
+    }, 1000);
+}
+
+/**
+ * Funzione per fermare e nascondere il conto alla rovescia. (NON ESPORTATA)
+ */
+function stopCountdown() {
+    console.log("DEBUG: stopCountdown() called from utils.js."); // DEBUG
+    clearInterval(countdownInterval);
+    if (countdownTimerElement) {
+        countdownTimerElement.textContent = '';
+        console.log("DEBUG: Countdown text cleared by stopCountdown (from utils.js)."); // DEBUG
+    }
+}
+
+
 /**
  * Inizializza tutti gli event listener relativi alla navbar.
  * Deve essere chiamata dopo che la navbar è stata caricata nel DOM.
@@ -203,6 +256,8 @@ export async function wakeUpBackend(pageSpecificResultDiv = null) {
     if (backendLoadingSpinner) backendLoadingSpinner.classList.remove('hidden');
     if (googleAuthButtonWrapper) googleAuthButtonWrapper.classList.add('hidden');
     if (serverStatusMessage) serverStatusMessage.innerHTML = 'Waiting for server response...';
+    startCountdown(); // CHIAMATA SOLO QUI PER AVVIARE IL CONTO ALLA ROVESCIA PER IL WAKEUP
+
 
     console.log('Backend starting...');
     let isBackendReady = false;
@@ -234,7 +289,7 @@ export async function wakeUpBackend(pageSpecificResultDiv = null) {
         }
     } finally {
         if (backendLoadingSpinner) backendLoadingSpinner.classList.add('hidden');
-
+        stopCountdown(); // FERMA IL CONTO ALLA ROVESCIA QUI
         if (isBackendReady) {
             if (waitingForBackendMessage) waitingForBackendMessage.classList.add('hidden');
             if (googleAuthButtonWrapper) googleAuthButtonWrapper.classList.remove('hidden');
@@ -318,8 +373,6 @@ export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
         }, numberOfPulses * pulseDurationMs);
     }
 }
-
-
 
 /**
  * Costruisce la cacheKey e il postBody standardizzati per le richieste di file archiviati.
