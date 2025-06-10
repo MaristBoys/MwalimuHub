@@ -1,5 +1,5 @@
 // js/upload.js
-import { CACHE_DURATION_MS, loadNavbar, initializeThemeToggle, updateUIForLoginState } from '/MwalimuHub/js/utils.js'; // Importa updateUIForLoginState
+import { CACHE_DURATION_MS, loadNavbar, initializeThemeToggle, updateUIForLoginState, refreshArchivedFilesCache } from '/MwalimuHub/js/utils.js'; // Importa updateUIForLoginState
 import { fetchAndCacheDropdownData } from '/MwalimuHub/js/prefetch.js';
 import { logout } from '/MwalimuHub/js/login.js'; // Importa la funzione logout
 
@@ -309,7 +309,7 @@ function filterRoomsByForm() {
             });
             console.log(`UPLOAD.JS: Room dropdown filtered. Showing ${filteredRooms.length} rooms starting with '${lastCharOfForm}'.`);
         } else {
-            roomSelect.innerHTML = '<option value="">No rooms found for this form</option>';
+            roomSelect.innerHTML = '<option value="">Other</option>';
             console.log(`UPLOAD.JS: No rooms found matching form's last character: ${lastCharOfForm}`);
         }
     } else {
@@ -404,6 +404,17 @@ async function handleUpload(event) {
             if (uploadForm) uploadForm.reset(); // Resetta il form
             prefillAuthor(); // Pre-riempi di nuovo l'autore dopo il reset
             console.log('UPLOAD.JS: Upload successful. Form reset, author prefilled.');
+
+            // NEW: Chiama la funzione per aggiornare la cache dei file archiviati
+            const currentUserData = JSON.parse(localStorage.getItem('userData'));
+            if (currentUserData) {
+                await refreshArchivedFilesCache(currentUserData, ''); // Passa userData e un filtro autore vuoto
+                console.log('UPLOAD.JS: Archived files cache refreshed after successful upload.');
+            } else {
+                console.warn('UPLOAD.JS: User data not found, skipping archived files cache refresh.');
+            }
+
+
         } else {
             const errorMessage = result.message || 'An unknown error occurred.'; // Tradotto
             uploadStatus.textContent = `Upload failed:: ${errorMessage}`; // Tradotto

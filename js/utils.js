@@ -343,14 +343,14 @@ export async function loadNavbar(options = {}) {
 /**
  * Attiva un'animazione "pulse" sulla navbar per un numero specifico di volte,
  * rendendola contemporaneamente grigia e opaca.
- * @param {number} [numberOfPulses=5] - Il numero di volte che la navbar deve pulsare.
- * @param {number} [pulseDurationMs=1000] - La durata di una singola animazione pulse in millisecondi (default Tailwind).
+ * @param {number} [numberOfPulses=4] - Il numero di volte che la navbar deve pulsare.
+ * @param {number} [pulseDurationMs=800] - La durata di una singola animazione pulse in millisecondi (default Tailwind).
  */
-export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
+export function triggerNavbarPulse(numberOfPulses = 4, pulseDurationMs = 800) {
     if (mainNavbar) {
         // Assicurati che la navbar sia opaca e grigia subito
         mainNavbar.classList.remove('bg-transparent');
-        mainNavbar.classList.add('bg-red-500', 'bg-opacity-100');
+        mainNavbar.classList.add('bg-green-300', 'bg-opacity-100');
 
         // Applica l'animazione di pulse
         mainNavbar.classList.add('animate-pulse');
@@ -362,7 +362,7 @@ export function triggerNavbarPulse(numberOfPulses = 5, pulseDurationMs = 1000) {
             // Riabilita i listener per l'hover se la navbar non deve rimanere opaca forzatamente
             // (Assumendo che in questo contesto non sia forceOpaque, ma lo controlliamo per sicurezza)
             if (!mainNavbar.matches(':hover')) { // Solo se il mouse non è sopra la navbar
-                mainNavbar.classList.remove('bg-red-500', 'bg-opacity-100');
+                mainNavbar.classList.remove('bg-green-300', 'bg-opacity-100');
                 mainNavbar.classList.add('bg-transparent');
             }
             // Puoi aggiungere qui la logica per ripristinare il comportamento trasparente della navbar se desiderato
@@ -432,4 +432,54 @@ export function buildArchivedFilesRequestParams(userData, currentAuthorFilter = 
     }
 
     return { cacheKey, postBody };
+}
+
+
+
+/**
+ * Aggiorna i dati dei file archiviati nella cache di localStorage e forza un nuovo recupero.
+ * Questa funzione è utile per garantire che la lista dei file sia aggiornata dopo operazioni come l'upload o la cancellazione.
+ *
+ * @param {Object} userData - L'oggetto utente contenente 'profile' e 'googleName'.
+ * @param {string} [currentAuthorFilter=''] - Il valore attuale del filtro autore, se presente.
+ * @returns {Promise<void>}
+ */
+export async function refreshArchivedFilesCache(userData, currentAuthorFilter = '') {
+    console.log('UTILS: refreshArchivedFilesCache called.');
+
+    if (!userData || !userData.profile) {
+        console.warn('UTILS: Cannot refresh archived files cache: userData or userProfile is missing.');
+        return;
+    }
+
+    // Costruisci la cacheKey e il postBody usando la funzione esistente
+    const { cacheKey, postBody } = buildArchivedFilesRequestParams(userData, currentAuthorFilter);
+
+    // Rimuovi le chiavi di cache relative ai file archiviati
+    localStorage.removeItem(cacheKey);
+    localStorage.removeItem(`${cacheKey}Timestamp`);
+    console.log(`UTILS: Cache for key "${cacheKey}" cleared.`);
+
+    // Importa dinamicamente fetchAndCacheArchivedFiles per evitare dipendenze circolari
+    // Se la funzione è già importata in un modulo che importa utils.js, va bene.
+    // In questo caso, visto che prefetch.js importa utils.js, e archive.js importa sia utils che prefetch,
+    // è meglio che archive.js gestisca il richiamo a fetchAndCacheArchivedFiles.
+    // Tuttavia, se si vuole una funzione completamente autonoma in utils, si può fare un import qui:
+    // import { fetchAndCacheArchivedFiles } from '/MwalimuHub/js/prefetch.js';
+    // Per ora, la manterrò come una funzione che prepara la cache, aspettandosi che il modulo chiamante
+    // gestisca il ricaricamento dei dati veri e propri (e.g., loadArchivedFiles in archive.js).
+    // Se vuoi che questa funzione faccia il fetch diretto, devi importare fetchAndCacheArchivedFiles qui.
+
+    // Aggiungo l'import di fetchAndCacheArchivedFiles qui per renderla autonoma
+    // Nota: questo potrebbe creare un ciclo di dipendenze se prefetch.js importa utils.js e utils.js importa prefetch.js.
+    // Se si verifica un problema di dipendenza circolare, questa funzione dovrebbe essere spostata o
+    // il meccanismo di aggiornamento dovrebbe essere gestito diversamente (es. passando una callback).
+    // Per lo scopo richiesto, assumo che sia ok importare qui.
+    try {
+        const { fetchAndCacheArchivedFiles } = await import('/js/prefetch.js');
+        await fetchAndCacheArchivedFiles(cacheKey, 'drive/list', postBody);
+        console.log(`UTILS: Archived files for "${cacheKey}" successfully re-fetched and cached.`);
+    } catch (error) {
+        console.error('UTILS: Error re-fetching archived files in refreshArchivedFilesCache:', error);
+    }
 }

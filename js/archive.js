@@ -425,5 +425,8 @@ async function deleteFile(fileId) {
     }
 }
 
+
+
+
 // Make deleteFile globally available if you use onclick in HTML
 window.deleteFile = deleteFile;
