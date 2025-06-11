@@ -489,31 +489,30 @@ export function getDeviceInfo() {
   const parser = new UAParser();
   const result = parser.getResult();
   const ua = navigator.userAgent || '';
+  const width = window.innerWidth || screen.width;
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+  // --- OS detection override ---
   let os = result.os.name || 'Unknown OS';
   let osVersion = result.os.version || '';
 
-  // --- Correzione OS mancante ---
-  if (os === 'Linux') {
-    const width = window.innerWidth;
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouch && width < 768) {
-      os = 'Android';
-    }
+  if (/Android/i.test(ua)) {
+    os = 'Android';
+    const match = ua.match(/Android\s([0-9.]+)/i);
+    if (match) osVersion = match[1];
   }
 
+  // --- Browser ---
   const browser = result.browser.name || 'Unknown Browser';
   const browserVersion = result.browser.version || '';
 
+  // --- Device type override logic ---
   let deviceType = result.device.type || '';
 
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const width = window.innerWidth || screen.width;
-
-  if (!deviceType) {
-    if (/mobile/i.test(ua)) {
+  if (!deviceType || deviceType === 'tablet') {
+    if (/Mobile/i.test(ua)) {
       deviceType = 'mobile';
-    } else if (/tablet/i.test(ua)) {
+    } else if (/Tablet|iPad/i.test(ua)) {
       deviceType = 'tablet';
     } else if (isTouch && width < 768) {
       deviceType = 'mobile';
@@ -526,54 +525,9 @@ export function getDeviceInfo() {
     }
   }
 
-  return {
-    deviceType,
-    os,
-    osVersion,
-    browser,
-    browserVersion
-  };
-}
-/*
-
-export function getDeviceInfo() {
-  const parser = new UAParser();
-  const result = parser.getResult();
-  const ua = navigator.userAgent || '';
-
-  let os = result.os.name || 'Unknown OS';
-  let osVersion = result.os.version || '';
-
-  if (/android/i.test(ua)) os = 'Android';
-  else if (/iPhone/i.test(ua)) os = 'iOS';
-  else if (/iPad/i.test(ua)) os = 'iPadOS';
-  else if (/iPod/i.test(ua)) os = 'iPodOS';
-  else if (/Windows Phone/i.test(ua)) os = 'Windows Phone';
-  else if (/Mac OS X/i.test(ua)) os = 'Mac OS X';
-
-  const browser = result.browser.name || 'Unknown Browser';
-  const browserVersion = result.browser.version || '';
-
-  let deviceType = result.device.type || '';
-
-  // 🔍 Aggiustamenti manuali
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const width = window.innerWidth || screen.width;
-
-  if (!deviceType) {
-    if (/mobile/i.test(ua)) {
-      deviceType = 'mobile';
-    } else if (/tablet|ipad/i.test(ua)) {
-      deviceType = 'tablet';
-    } else if (isTouch && width < 768) {
-      deviceType = 'mobile';
-    } else if (isTouch && width < 1024) {
-      deviceType = 'tablet';
-    } else if (width >= 768 && width < 1366) {
-      deviceType = 'notebook';
-    } else {
-      deviceType = 'desktop';
-    }
+  // --- Correzione forzata se OS è Android ---
+  if (os === 'Android' && deviceType !== 'mobile') {
+    deviceType = 'mobile';
   }
 
   return {
@@ -584,6 +538,3 @@ export function getDeviceInfo() {
     browserVersion
   };
 }
-*/
-
-
