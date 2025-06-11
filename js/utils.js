@@ -489,7 +489,7 @@ export async function refreshArchivedFilesCache(userData, currentAuthorFilter = 
  * Utilizza UAParser.js per ottenere informazioni dettagliate sul dispositivo.
  * @returns {Object} Un oggetto contenente deviceType, os, osVersion, browser, browserVersion.
  */
-export function getDeviceInfo() {
+/*export function getDeviceInfo() {
     // Controlla se UAParser è disponibile globalmente (caricato dal CDN)
     if (typeof UAParser === 'undefined') {
         console.warn("UAParser non è disponibile. Impossibile ottenere dettagli completi del dispositivo.");
@@ -513,4 +513,65 @@ export function getDeviceInfo() {
         browser: result.browser.name || "Unknown Browser",
         browserVersion: result.browser.version || ""
     };
+}
+    */
+
+export function getDeviceInfo() {
+  const parser = new UAParser();
+  const result = parser.getResult();
+  const ua = navigator.userAgent || '';
+
+  // Sistema operativo
+  let os = result.os.name || 'Unknown OS';
+  let osVersion = result.os.version || '';
+
+  // Correggi OS per Android
+  if (/android/i.test(ua)) {
+    os = 'Android';
+  }
+
+  // Correggi OS per iOS
+  if (/iPhone/i.test(ua)) {
+    os = 'iOS';
+  } else if (/Windows Phone/i.test(ua)) {
+    os = 'Windows Phone';
+  } else if (/Mac OS X/i.test(ua)) {
+    os = 'Mac OS X';
+  } else if (/|iPad/i.test(ua)) {
+    os = 'iPad OS'; // Per iPad, consideriamo iPadOS
+  } else if (/iPod/i.test(ua)) {
+    os = 'iPod OS'; // Per iPod, consideriamo iPodOS
+  } 
+
+  // Browser
+  const browser = result.browser.name || 'Unknown Browser';
+  const browserVersion = result.browser.version || '';
+
+  // Tipologia dispositivo
+  let deviceType = result.device.type || '';
+
+  if (!deviceType) {
+    // Tentativo manuale: verifica Mobile / Tablet dallo UA
+    if (/mobile/i.test(ua)) {
+      deviceType = 'mobile';
+    } else if (/tablet/i.test(ua)) {
+      deviceType = 'tablet';
+    } else {
+      // Heuristica basata sulla larghezza dello schermo
+      const width = window.innerWidth || screen.width;
+      if (width >= 768 && width < 1366) {
+        deviceType = 'notebook';
+      } else {
+        deviceType = 'desktop';
+      }
+    }
+  }
+
+  return {
+    deviceType,
+    os,
+    osVersion,
+    browser,
+    browserVersion
+  };
 }
