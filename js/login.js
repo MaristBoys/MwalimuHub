@@ -7,7 +7,8 @@ import {
     updateUIForLoginState,
     buildArchivedFilesRequestParams, // <--- NUOVA IMPORTAZIONE
     //menuOverlay,
-    triggerNavbarPulse
+    triggerNavbarPulse,
+    getDeviceInfo
 } from '/MwalimuHub/js/utils.js';
 import { fetchAndCacheDropdownData, fetchAndCacheArchivedFiles } from '/MwalimuHub/js/prefetch.js';
 
@@ -86,6 +87,11 @@ export async function handleCredentialResponse(response) {
             second: '2-digit'
         }); // Es. "23:25:03"
 
+        // --- NUOVO: Recupera le informazioni sul dispositivo usando getDeviceInfo ---
+        const deviceInfo = getDeviceInfo();
+        console.log("LOGIN.JS: Device Info:", deviceInfo);
+        
+
 
         // --- CONSOLE.LOG PER TRACCIARE LA CHIAMATA DI LOGIN ---
         console.log(`LOGIN.JS: Effettuo chiamata al backend per il login: ${window.BACKEND_BASE_URL}/api/google-login`);
@@ -102,7 +108,8 @@ export async function handleCredentialResponse(response) {
             body: JSON.stringify({
                 timeZone: timeZone,
                 dateLocal: dateLocal,
-                timeLocal: timeLocal
+                timeLocal: timeLocal,
+                deviceInfo: deviceInfo, // Aggiungi le informazioni sul dispositivo
             })
         });
 
@@ -172,9 +179,9 @@ export async function logout() {
     // CONSOLE.LOG PER TRACCIARE LA CHIAMATA DI LOGOUT DAL FRONTEBD
     console.log(`LOGIN.JS: Effettuo chiamata al backend per il logout: ${window.BACKEND_BASE_URL}/api/logout`);
 
-    // NEW: Reindirizza immediatamente
-    // Sposta questa riga qui per un reindirizzamento più rapido.
-    window.location.replace("/MwalimuHub/index.html");
+    /// NEW: Reindirizza immediatamente --> no fatto dopo
+    // Sposta questa riga qui per un reindirizzamento più rapido, no perchè non riesce a passare i dati al logout
+    //window.location.replace("/MwalimuHub/index.html");
 
     try {
         // Recupera i dati dell'utente dal localStorage prima di rimuoverli
@@ -201,6 +208,10 @@ export async function logout() {
         }); // Es. "23:25:03"
 
 
+         // --- NUOVO: Recupera le informazioni sul dispositivo usando getDeviceInfo ---
+        const deviceInfo = getDeviceInfo();
+        console.log("LOGIN.JS: Device Info:", deviceInfo);
+
         // Invia una richiesta al backend per loggare l'attività di logout
         // Non è necessario inviare l'idToken qui, solo i dati per il log
         const res = await fetch(`${window.BACKEND_BASE_URL}/api/auth/logout`, {
@@ -212,7 +223,8 @@ export async function logout() {
                 profile: userProfile,
                 timeZone: timeZone, // Aggiunto
                 dateLocal: dateLocal, // Aggiunto
-                timeLocal: timeLocal // Aggiunto
+                timeLocal: timeLocal, // Aggiunto
+                deviceInfo: deviceInfo, // Aggiungi le informazioni sul dispositivo
             }) // Invia nome, email e profilo
         });
         // Gestione della risposta del backend
@@ -249,11 +261,11 @@ export async function logout() {
             // Il messaggio qui verrà sovrascritto dal reindirizzamento
             // displayResult('Google auto-select disabilitato.', 'info'); 
         }
-        /// Reindirizza alla pagina index.html dopo un breve ritardo per permettere di vedere il messaggio di logout
-        /// lo fa subito, ma il messaggio di logout viene mostrato prima del reindirizzamento.
-        ///setTimeout(() => {
-        ///    window.location.replace("/MwalimuHub/index.html");
-        ///}, 1500); // Ritardo di 1.5 secondi
+        // Reindirizza alla pagina index.html dopo un breve ritardo per permettere di vedere il messaggio di logout
+        // lo fa subito, ma il messaggio di logout viene mostrato prima del reindirizzamento.
+        setTimeout(() => {
+            window.location.replace("/MwalimuHub/index.html");
+        }, 1500); // Ritardo di 1.5 secondi
         
         // NEW: Nascondi spinner e messaggio di logout una volta completata la pulizia
         if (logoutSpinner) logoutSpinner.classList.add('hidden');

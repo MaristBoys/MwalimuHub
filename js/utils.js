@@ -483,3 +483,34 @@ export async function refreshArchivedFilesCache(userData, currentAuthorFilter = 
         console.error('UTILS: Error re-fetching archived files in refreshArchivedFilesCache:', error);
     }
 }
+
+
+/**
+ * Utilizza UAParser.js per ottenere informazioni dettagliate sul dispositivo.
+ * @returns {Object} Un oggetto contenente deviceType, os, osVersion, browser, browserVersion.
+ */
+export function getDeviceInfo() {
+    // Controlla se UAParser è disponibile globalmente (caricato dal CDN)
+    if (typeof UAParser === 'undefined') {
+        console.warn("UAParser non è disponibile. Impossibile ottenere dettagli completi del dispositivo.");
+        // Ritorna un oggetto con valori di fallback o vuoti
+        return {
+            deviceType: "Unknown",
+            os: "Unknown OS",
+            osVersion: "",
+            browser: "Unknown Browser",
+            browserVersion: ""
+        };
+    }
+
+    const parser = new UAParser();
+    const result = parser.getResult();
+
+    return {
+        deviceType: result.device.type || "Unknown device", // 'desktop' come fallback ragionevole
+        os: result.os.name || "Unknown OS",
+        osVersion: result.os.version || "",
+        browser: result.browser.name || "Unknown Browser",
+        browserVersion: result.browser.version || ""
+    };
+}

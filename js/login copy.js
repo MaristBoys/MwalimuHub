@@ -18,9 +18,11 @@ let resultDivForUIUpdate = null;
 // NEW: Riferimento per lo spinner di logout
 let logoutSpinner = null;
 
-
-
-
+/**
+ * Mostra un messaggio di risultato nel div specificato.
+ * @param {string} messageHtml - Il messaggio HTML da visualizzare.
+ * @param {string} type - Il tipo di messaggio ('info', 'success', 'error').
+ */
 function displayResult(messageHtml, type = 'info') {
     if (resultDivForUIUpdate) {
         resultDivForUIUpdate.innerHTML = messageHtml;
@@ -41,6 +43,8 @@ function displayResult(messageHtml, type = 'info') {
         }
     }
 }
+
+
 
 /**
  * Funzione di callback per Google Identity Services. Gestisce la risposta dopo il login di Google.
@@ -64,6 +68,8 @@ export async function handleCredentialResponse(response) {
         if (googleAuthButtonWrapper) googleAuthButtonWrapper.classList.add('hidden');
         if (backendLoadingSpinner) backendLoadingSpinner.classList.remove('hidden');
         if (waitingForBackendMessage) waitingForBackendMessage.classList.remove('hidden');
+
+       
 
         // --- Ottieni Timezone, DateLocal e TimeLocal ---
         const now = new Date();
@@ -147,6 +153,7 @@ export async function handleCredentialResponse(response) {
     } finally {
         if (backendLoadingSpinner) backendLoadingSpinner.classList.add('hidden');
         if (waitingForBackendMessage) waitingForBackendMessage.classList.add('hidden');
+       
         // Non nascondere il bottone se il login non è riuscito
         if (!localStorage.getItem('isLoggedIn') && googleAuthButtonWrapper) {
             googleAuthButtonWrapper.classList.remove('hidden');
