@@ -537,7 +537,7 @@ export function getDeviceInfo() {
     os = 'Windows Phone';
   } else if (/Mac OS X/i.test(ua)) {
     os = 'Mac OS X';
-  } else if (/|iPad/i.test(ua)) {
+  } else if (/iPad/i.test(ua)) {
     os = 'iPad OS'; // Per iPad, consideriamo iPadOS
   } else if (/iPod/i.test(ua)) {
     os = 'iPod OS'; // Per iPod, consideriamo iPodOS
